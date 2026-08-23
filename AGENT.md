@@ -10,7 +10,7 @@
 - **Stack:** Kotlin + Jetpack Compose + Hilt + Room + Navigation Compose.
 - **Design Language:** One UI 9 (Samsung).
 - **Propósito:** Proyecto personal exclusivo. No academico.
-- **Target:** Samsung Galaxy Tab S6 Lite (2024) como dispositivo de prueba principal. Compatible también con Tab S10 FE, Tab S10 Lite, y la serie S8/S9/S10 premium.
+- **Target:** Samsung Galaxy Tab S6 Lite (2024) como dispositivo de prueba principal. Compatible también con Tab S10 FE, Tab S10 Lite, y la serie S8/S9/S10/S11 premium.
 - **S Pen:** Pasivo en S6 Lite/FE/Lite (sin Bluetooth); activo en serie S premium. Ambos soportados.
 - **Rama de trabajo principal:** `main`
 - **Rama de características avanzadas (encriptación + sync):** `feature/encryption-sync`
@@ -134,11 +134,27 @@ data class CalendarUiState(
 - No usar `hardcoded strings` en la UI — usar `stringResource`.
 
 ### 5.3 Composables de UI Reutilizables (crear en `ui/components/`)
-- `SJournalCard` — Tarjeta base con squircle y separación tonal.
-- `SJournalFab` — FAB con icono y animación spring de aparición.
-- `SJournalTopBar` — Barra superior con título y acciones.
-- `CalendarDayCell` — Celda de día del calendario con indicador de entrada.
-- `EntryTypeSelector` — Bottom sheet con selector `Nota a mano` / `Nota de texto`.
+
+- `SJournalCard` — Tarjeta/contenedor base con squircle y separación tonal.
+- `AddNowButton` — Botón píldora `+ ADD NOW` al fondo del panel izquierdo. **No es un FAB flotante.**
+- `PanelHeader` — Header del panel izquierdo: mensaje de estado dinámico del día + menú `⋮`.
+- `FullscreenToggleButton` — Botón flotante en `Alignment.TopEnd` del panel derecho para expandir la entrada a pantalla completa y volver al layout dual-panel.
+- `SpenToolbarPill` — Toolbar S Pen en forma de píldora flotante en la parte inferior del panel derecho. Contiene: tipos de lápiz, rotulador, borrador, paleta de colores, formas, toggle de hoja rayada, y menú de más opciones (`···`). Inspirado en el estilo de One UI 9 (toolbar pill flotante, no barra fija en el tope).
+- `CalendarDayCell` — Celda de día del calendario con indicador de entrada (●) y estado seleccionado.
+- `RuledCanvasBackground` — Composable que dibuja las líneas horizontales de fondo (estilo hoja de carpeta) detrás del canvas S Pen.
+
+### 5.4 Reglas de Layout — Derivadas del Wireframe
+
+Estas reglas son **obligatorias** para toda la UI del panel principal:
+
+1. **Sin `TopAppBar` de ancho completo.** La pantalla principal no tiene una barra de navegación que abarque los dos paneles.
+2. **`AddNowButton` siempre en el panel izquierdo**, alineado al fondo (`Alignment.BottomCenter`). No aparece flotando sobre el canvas.
+3. **`FullscreenToggleButton` siempre en `Alignment.TopEnd`** del panel derecho. Al tocarlo alterna entre layout dual-panel y el panel derecho a pantalla completa.
+4. **El canvas con renglones es el estado por defecto** del panel derecho — visible sin necesidad de que el usuario elija primero un tipo de entrada.
+5. **`SpenToolbarPill` siempre visible** en la parte inferior del panel derecho. No es una barra fija de ancho completo; es una píldora flotante centrada, al estilo One UI 9.
+6. **El mensaje de estado** ("No posts today" / fecha del día seleccionado) vive en el `PanelHeader` del panel izquierdo, no en el panel derecho.
+7. **El menú `⋮`** (eliminar entrada, compartir, etc.) vive en el `PanelHeader` del panel izquierdo.
+8. En el panel derecho **no hay controles de navegación ni títulos** — solo el botón fullscreen arriba a la derecha y la toolbar pill abajo.
 
 ---
 

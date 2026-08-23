@@ -1,6 +1,6 @@
 # implementation_plan.md — S Journal: Roadmap de Desarrollo
 
-> **Última actualización:** 2026-08-17  
+> **Última actualización:** 2026-08-23  
 > **Spec técnica completa:** [`SPEC.md`](./SPEC.md)  
 > **Instrucciones para agentes:** [`AGENT.md`](./AGENT.md)  
 
@@ -101,34 +101,46 @@ main ─────────────────────────
 **Layout Adaptativo**
 - [ ] Implementar detección de `WindowSizeClass` en `MainActivity.kt`
 - [ ] Crear `AdaptiveLayout.kt` — composable que decide entre `TwoPaneLayout` y `SinglePaneLayout`
-- [ ] Implementar `TwoPaneLayout.kt` — layout tablet (calendario izquierda, entry derecha)
-- [ ] Implementar `SinglePaneLayout.kt` — layout teléfono (un panel, navegación con back)
+- [ ] Implementar `TwoPaneLayout.kt` — layout tablet (panel izquierdo fijo + panel derecho expandido)
+- [ ] Implementar `SinglePaneLayout.kt` — layout teléfono (un panel, navegación con back stack)
 
-**Panel Izquierdo — Calendario**
-- [ ] Implementar `CalendarScreen.kt` + `CalendarViewModel.kt`
+**Panel Izquierdo — Header + Calendario + ADD NOW**
+- [ ] Implementar `PanelHeader.kt` — header del panel izquierdo con:
+  - Mensaje de estado dinámico (p. ej. "No posts today" / nombre del día seleccionado)
+  - Menú `⋮` (opciones de la entrada: eliminar, compartir, etc.)
+- [ ] Implementar `CalendarViewModel.kt` — estado del mes y día seleccionado
 - [ ] Implementar `MonthCalendar.kt` — grilla de 7 columnas × N filas
-- [ ] Implementar `CalendarDayCell.kt` — celda con: número del día, indicador de entrada (●), estado selected/today
+- [ ] Implementar `CalendarDayCell.kt` — celda con número del día, indicador (●), estado selected/today
 - [ ] Implementar navegación entre meses (flechas ◄/►)
-- [ ] Implementar swipe horizontal para cambio de mes (PagerState)
-- [ ] Animación spring al seleccionar fecha
-- [ ] Empty state visual para días sin entrada en el panel derecho
+- [ ] Implementar swipe horizontal para cambio de mes (`HorizontalPager`)
+- [ ] Implementar `AddNowButton.kt` — botón píldora `+ ADD NOW` al fondo del panel izquierdo
+- [ ] Conectar `AddNowButton` con la acción de crear entrada para el día actual
 
-**Panel Derecho — Contenedor de Entrada**
-- [ ] Implementar `EntryContainerScreen.kt` — muestra entrada del día seleccionado o empty state
-- [ ] Implementar `EntryTypeSelector.kt` — Bottom sheet modal con opciones:
-  - "Nota a mano" (→ Canvas S Pen)
-  - "Nota de texto" (→ Editor de texto)
-- [ ] Implementar `SJournalFab.kt` — FAB con animación spring, visible solo cuando NO hay entrada para el día
+**Panel Derecho — Canvas + Fullscreen + Toolbar S Pen**
+- [ ] Implementar `EntryPanelScreen.kt` — pantalla del panel derecho, siempre visible
+- [ ] Implementar `FullscreenToggleButton.kt` — botón flotante en `Alignment.TopEnd`; alterna entre dual-panel y pantalla completa
+- [ ] Implementar `RuledCanvasBackground.kt` — dibuja líneas horizontales de fondo con `Canvas` (Compose)
+- [ ] Integrar `RuledCanvasBackground` como fondo del panel derecho (visible incluso sin entrada)
+- [ ] Implementar `SpenToolbarPill.kt` — píldora flotante inferior con herramientas S Pen:
+  - Tipos de trazo: lápiz, rotulador, pincel
+  - Borrador (puntual y de trazo completo)
+  - Selector de color (paleta One UI)
+  - Formas geométricas
+  - Toggle hoja rayada (on/off)
+  - Botón `···` para más opciones
+- [ ] El canvas S Pen se superpone sobre `RuledCanvasBackground` (implementado en Fase 3)
 
-**Componentes Compartidos**
+**Componentes Base Compartidos**
 - [ ] Implementar `SJournalCard.kt` — contenedor base con squircle + separación tonal
-- [ ] Implementar `SJournalTopBar.kt` — barra superior con título + acciones
 
 #### Criterio de Completitud (Fase 2 "Done")
 - Dual-panel visible en tablet; single-panel en teléfono (verificar en emulador)
-- Calendario navega entre meses correctamente
-- Al seleccionar una fecha, el panel derecho responde
-- El Bottom Sheet de selección de tipo de entrada aparece y se puede cerrar
+- Calendario navega entre meses; al tocar una fecha el `PanelHeader` actualiza el mensaje
+- El `AddNowButton` es visible al fondo del panel izquierdo
+- El panel derecho muestra los renglones de fondo
+- La `SpenToolbarPill` aparece como píldora flotante al fondo del panel derecho
+- El `FullscreenToggleButton` aparece en la esquina superior derecha y expande el panel
+- No hay `TopAppBar` que abarque ambos paneles
 - No hay ningún color hardcodeado en ningún Composable
 
 ---

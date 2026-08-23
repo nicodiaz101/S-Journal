@@ -174,38 +174,46 @@ timestamp: Long               // Para animación replay futura
 
 ### Fase 2 — UI Adaptativa Tablet-First
 
-| ID    | Funcionalidad                                      | Prioridad |
-|-------|---------------------------------------------------|-----------|
-| F2-01 | Detección de `WindowSizeClass` (Expanded/Compact)  | P0        |
-| F2-02 | Layout dual-panel para tablets (≥ 600dp)           | P0        |
-| F2-03 | Layout single-panel para teléfonos                 | P1        |
-| F2-04 | Panel izquierdo: Calendario mensual interactivo    | P0        |
-| F2-05 | Indicadores visuales en días con entradas          | P0        |
-| F2-06 | Panel derecho: Contenedor de entrada del día       | P0        |
-| F2-07 | Navegación entre meses (swipe + flechas)           | P0        |
-| F2-08 | Animación spring al seleccionar fecha              | P1        |
-| F2-09 | Empty state ilustrado para días sin entrada        | P1        |
-| F2-10 | FAB para nueva entrada (con selector de tipo)      | P0        |
+| ID    | Funcionalidad                                               | Prioridad |
+|-------|-------------------------------------------------------------|-----------|
+| F2-01 | Detección de `WindowSizeClass` (Expanded/Compact)           | P0        |
+| F2-02 | Layout dual-panel para tablets (≥ 600dp)                    | P0        |
+| F2-03 | Layout single-panel para teléfonos                          | P1        |
+| F2-04 | **Panel izq. — Header:** mensaje de estado + menú `⋮`       | P0        |
+| F2-05 | **Panel izq. — Calendario** mensual interactivo             | P0        |
+| F2-06 | Indicadores visuales (●) en días con entradas               | P0        |
+| F2-07 | Navegación entre meses (swipe horizontal + flechas ◄►)     | P0        |
+| F2-08 | **Panel izq. — Botón `+ ADD NOW`** (píldora al fondo)       | P0        |
+| F2-09 | **Panel der. — Botón fullscreen** (expandir entrada) arriba a la derecha | P0 |
+| F2-10 | **Panel der. — Canvas con renglones** visible por defecto                 | P0 |
+| F2-11 | **Panel der. — Toolbar S Pen flotante** (píldora inferior)                | P0 |
+| F2-12 | Mensaje "No posts today" en header del panel izquierdo                    | P0 |
+| F2-13 | Animación spring al seleccionar fecha en calendario                       | P1 |
 
-#### Layout Dual-Panel (referencia visual)
+> **Sin TopBar de ancho completo.** Cada panel gestiona sus propios controles. No existe una barra de navegación que abarque los dos paneles simultáneamente.
+
+#### Layout Dual-Panel — Basado en Wireframe
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  [S Journal]                                    [⚙] [🔍]        │
-├─────────────────────────┬───────────────────────────────────────┤
-│                         │                                       │
-│   ◄  Agosto 2026  ►    │    Lunes, 17 de agosto               │
-│                         │                                       │
-│  Lu Ma Mi Ju Vi Sá Do  │  ┌─────────────────────────────────┐  │
-│   .  .  .  .  .  1   2 │  │                                 │  │
-│   3  4  5  6  7  8   9 │  │   [Nota a mano] | [Nota texto]  │  │
-│  10 11 12 13 14 15  16 │  │                                 │  │
-│  [17]18 19 20 21 22  23│  │   (canvas S Pen / editor texto) │  │
-│  24 25 26 27 28 29  30 │  │                                 │  │
-│  31                     │  └─────────────────────────────────┘  │
-│                         │                                   [+] │
-│  ● = tiene entrada      │                                       │
-└─────────────────────────┴───────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│  ┌─────────────────────┐  ┌──────────────────────────────────────┐ │
+│  │ No posts today   ⋮  │  │                       [⛶ Fullscreen]│ │
+│  │                     │  │  ∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿  │ │
+│  │ Lu Ma Mi Ju Vi Sá Do│  │  ∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿   │ │
+│  │  ○  ○  ○  ○  ○  ○ ○│  │  ∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿   │ │
+│  │  ○  ○  ○  ○  ○  ○ ○│  │                                      │ │
+│  │  ○  ○  ○  ○  ○  ○ ○│  │  (Canvas S Pen con renglones)        │ │
+│  │  ○  ○  ○ [○] ○  ○ ○│  │                                      │ │
+│  │  ○  ○  ○  ○  ○  ○ ○│  │  ∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿∿   │ │
+│  │                     │  │                                      │ │
+│  │  ( + ADD NOW )      │  │ ╭─ 🖊 ✏ ⬛ 💧 ▭ ≡ ··· ─────────╮  │ │
+│  └─────────────────────┘  │ ╰── Toolbar S Pen flotante ─────────╯  │ │
+│                            └──────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────────────┘
+
+[○] = día seleccionado · ● = día con entrada · ( ) = botón píldora
+∿∿∿ = renglones del canvas · [⛶] = botón de pantalla completa
+Toolbar pill: lápiz · rotulador · borrador · color · formas · renglones · más
 ```
 
 ---
@@ -293,7 +301,7 @@ fun MotionEvent.isPalmToIgnore(): Boolean =
 | Categoría          | Requisito                                                                     |
 |--------------------|-------------------------------------------------------------------------------|
 | **Rendimiento**    | Canvas S Pen: latencia < 20ms (percibida como instantánea)                   |
-| **Rendimiento**    | 60fps en animaciones de UI en Galaxy Tab S9+                                  |
+| **Rendimiento**    | 60fps en animaciones de UI en Galaxy Tab S6 Lite 2024                                  |
 | **Persistencia**   | Datos jamás perdidos ante cierre forzado (auto-save en canvas)               |
 | **Accesibilidad**  | Respetar tamaño de fuente del sistema (`sp`), contraste WCAG AA               |
 | **Compatibilidad** | API 34+ (Android 14). Sin comprometer compatibilidad sin justificación        |
