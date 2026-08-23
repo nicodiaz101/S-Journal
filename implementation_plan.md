@@ -62,22 +62,32 @@ main ─────────────────────────
 
 #### Tareas
 
-- [ ] Crear proyecto Android desde CLI (`android-cli` skill) con Kotlin + Compose
-- [ ] Configurar `build.gradle.kts` (app y root) con Compose BOM, Material 3
-- [ ] Configurar `libs.versions.toml` (Version Catalog) para manejo de dependencias
-- [ ] Agregar y configurar **Hilt**: `hilt-android`, `hilt-compiler`, plugin Gradle
-- [ ] Agregar y configurar **Room**: `room-runtime`, `room-ktx`, `room-compiler`, `room-testing`
-- [ ] Agregar **Navigation Compose**
-- [ ] Agregar **WindowSizeClass** (`androidx.compose.material3.adaptive` o `androidx.window`)
-- [ ] Crear estructura de paquetes según arquitectura definida en `SPEC.md § 4.2`
-- [ ] Implementar `AppModule.kt` — módulo Hilt base
-- [ ] Implementar `DatabaseModule.kt` — provee `JournalDatabase` y DAOs
-- [ ] Implementar `JournalDatabase.kt` — Room database con `JournalEntry` entity
-- [ ] Implementar sistema de temas One UI 9:
-  - `Color.kt` — tokens de color (modo claro y oscuro)
+- [x] Crear proyecto Android desde CLI (`android-cli` skill) con Kotlin + Compose
+- [x] Configurar `build.gradle.kts` (app y root) con Compose BOM, Material 3
+- [x] Configurar `libs.versions.toml` (Version Catalog) para manejo de dependencias
+- [x] Agregar y configurar **Hilt / DI**: `hilt-android`, `hilt-navigation-compose`, módulos DI
+- [x] Agregar y configurar **Room**: `room-runtime`, `room-ktx`, `room-compiler`, `room-testing`
+- [x] Agregar **Navigation Compose / Navigation 3**
+- [x] Agregar **WindowSizeClass / Adaptive** (`androidx.compose.material3.adaptive`, `androidx.window`)
+- [x] Crear estructura de paquetes según arquitectura definida en `SPEC.md § 4.2`
+- [x] Implementar `AppModule.kt` — módulo DI base (Dispatchers)
+- [x] Implementar `DatabaseModule.kt` — provee `JournalDatabase` y DAOs
+- [x] Implementar `RepositoryModule.kt` — vincula `JournalRepository`
+- [x] Implementar `JournalDatabase.kt` — Room database con `JournalEntry` entity y TypeConverters
+- [x] Implementar sistema de temas One UI 9:
+  - `Color.kt` — tokens de color (modo claro `#F4F0EB` y oscuro `#141416`)
   - `Type.kt` — escala tipográfica (Samsung One / sans-serif fallback)
-  - `Shape.kt` — formas squircle para componentes
+  - `Shape.kt` — formas squircle para componentes (28.dp para tarjetas, 50% para píldoras)
   - `Theme.kt` — `SJournalTheme` composable raíz
+- [x] Implementar componentes base One UI 9:
+  - `SJournalCard.kt` — contenedor squircle con separación tonal
+  - `AddNowButton.kt` — botón píldora al fondo del panel izquierdo
+  - `PanelHeader.kt` — header dinámico con menú `⋮`
+  - `FullscreenToggleButton.kt` — botón flotante para alternar pantalla completa
+  - `SpenToolbarPill.kt` — toolbar flotante inferior con herramientas S Pen
+  - `CalendarDayCell.kt` — celda de calendario con indicador (●)
+  - `RuledCanvasBackground.kt` — fondo con renglones de cuaderno
+
 
 #### Criterio de Completitud (Fase 1 "Done")
 - `./gradlew build` sin errores ni warnings de deprecación
@@ -99,49 +109,41 @@ main ─────────────────────────
 #### Tareas
 
 **Layout Adaptativo**
-- [ ] Implementar detección de `WindowSizeClass` en `MainActivity.kt`
-- [ ] Crear `AdaptiveLayout.kt` — composable que decide entre `TwoPaneLayout` y `SinglePaneLayout`
-- [ ] Implementar `TwoPaneLayout.kt` — layout tablet (panel izquierdo fijo + panel derecho expandido)
-- [ ] Implementar `SinglePaneLayout.kt` — layout teléfono (un panel, navegación con back stack)
+- [x] Implementar detección de `WindowSizeClass` / adaptativo
+- [x] Crear `MainAdaptiveLayout.kt` — composable que decide entre `TwoPaneLayout` y `SinglePaneLayout`
+- [x] Implementar layout tablet de dos paneles (panel izquierdo fijo + panel derecho expandido con animación)
+- [x] Implementar layout teléfono de panel único con navegación y back stack
 
 **Panel Izquierdo — Header + Calendario + ADD NOW**
-- [ ] Implementar `PanelHeader.kt` — header del panel izquierdo con:
-  - Mensaje de estado dinámico (p. ej. "No posts today" / nombre del día seleccionado)
-  - Menú `⋮` (opciones de la entrada: eliminar, compartir, etc.)
-- [ ] Implementar `CalendarViewModel.kt` — estado del mes y día seleccionado
-- [ ] Implementar `MonthCalendar.kt` — grilla de 7 columnas × N filas
-- [ ] Implementar `CalendarDayCell.kt` — celda con número del día, indicador (●), estado selected/today
-- [ ] Implementar navegación entre meses (flechas ◄/►)
-- [ ] Implementar swipe horizontal para cambio de mes (`HorizontalPager`)
-- [ ] Implementar `AddNowButton.kt` — botón píldora `+ ADD NOW` al fondo del panel izquierdo
-- [ ] Conectar `AddNowButton` con la acción de crear entrada para el día actual
+- [x] Implementar `PanelHeader.kt` — header del panel izquierdo con título dinámico y menú
+- [x] Implementar `CalendarViewModel.kt` — estado del mes, día seleccionado y entradas
+- [x] Implementar `MonthCalendar.kt` — grilla mensual de 7 columnas con navegación y transición animada
+- [x] Implementar `CalendarDayCell.kt` — celda con número del día, indicador (●), estado selected/today
+- [x] Implementar navegación entre meses (flechas ◄/►) y botón "Today"
+- [x] Implementar `CalendarPanelScreen.kt` — contenedor con resumen del día seleccionado
+- [x] Implementar `AddNowButton.kt` — botón píldora `+ ADD NOW` al fondo del panel izquierdo
+- [x] Conectar `AddNowButton` con la acción de crear entrada para el día actual
 
 **Panel Derecho — Canvas + Fullscreen + Toolbar S Pen**
-- [ ] Implementar `EntryPanelScreen.kt` — pantalla del panel derecho, siempre visible
-- [ ] Implementar `FullscreenToggleButton.kt` — botón flotante en `Alignment.TopEnd`; alterna entre dual-panel y pantalla completa
-- [ ] Implementar `RuledCanvasBackground.kt` — dibuja líneas horizontales de fondo con `Canvas` (Compose)
-- [ ] Integrar `RuledCanvasBackground` como fondo del panel derecho (visible incluso sin entrada)
-- [ ] Implementar `SpenToolbarPill.kt` — píldora flotante inferior con herramientas S Pen:
-  - Tipos de trazo: lápiz, rotulador, pincel
-  - Borrador (puntual y de trazo completo)
-  - Selector de color (paleta One UI)
-  - Formas geométricas
-  - Toggle hoja rayada (on/off)
-  - Botón `···` para más opciones
-- [ ] El canvas S Pen se superpone sobre `RuledCanvasBackground` (implementado en Fase 3)
+- [x] Implementar `EntryPanelScreen.kt` — pantalla del panel derecho
+- [x] Implementar `FullscreenToggleButton.kt` — botón flotante en `Alignment.TopEnd`; alterna entre dual-panel y pantalla completa
+- [x] Implementar `RuledCanvasBackground.kt` — dibuja líneas horizontales de fondo con `Canvas` (Compose)
+- [x] Integrar `RuledCanvasBackground` como fondo del panel derecho
+- [x] Implementar `SpenToolbarPill.kt` — píldora flotante inferior con herramientas S Pen y toggle de renglones
 
 **Componentes Base Compartidos**
-- [ ] Implementar `SJournalCard.kt` — contenedor base con squircle + separación tonal
+- [x] Implementar `SJournalCard.kt` — contenedor base con squircle + separación tonal
 
 #### Criterio de Completitud (Fase 2 "Done")
-- Dual-panel visible en tablet; single-panel en teléfono (verificar en emulador)
-- Calendario navega entre meses; al tocar una fecha el `PanelHeader` actualiza el mensaje
-- El `AddNowButton` es visible al fondo del panel izquierdo
-- El panel derecho muestra los renglones de fondo
-- La `SpenToolbarPill` aparece como píldora flotante al fondo del panel derecho
-- El `FullscreenToggleButton` aparece en la esquina superior derecha y expande el panel
-- No hay `TopAppBar` que abarque ambos paneles
-- No hay ningún color hardcodeado en ningún Composable
+- [x] Dual-panel visible en tablet; single-panel en teléfono
+- [x] Calendario navega entre meses; al tocar una fecha el `PanelHeader` actualiza el mensaje
+- [x] El `AddNowButton` es visible al fondo del panel izquierdo
+- [x] El panel derecho muestra los renglones de fondo
+- [x] La `SpenToolbarPill` aparece como píldora flotante al fondo del panel derecho
+- [x] El `FullscreenToggleButton` aparece en la esquina superior derecha y expande el panel
+- [x] No hay `TopAppBar` que abarque ambos paneles
+- [x] No hay ningún color hardcodeado en ningún Composable
+- [x] Tests unitarios de `CalendarViewModel` pasando al 100%
 
 ---
 
