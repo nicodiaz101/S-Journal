@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,9 +31,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.s_journal.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.s_journal.data.local.entity.JournalEntry
@@ -44,13 +48,15 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun CalendarPanelScreen(
     onAddEntry: (LocalDate) -> Unit,
     onEntryClick: (JournalEntry) -> Unit,
     modifier: Modifier = Modifier,
     showAddButton: Boolean = false,
-    viewModel: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
+    viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -86,12 +92,14 @@ internal fun CalendarPanelContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
                 .padding(bottom = if (showAddButton) 16.dp else 8.dp)
         ) {
             // Top Bar with ☰ and ⚙ (Samsung Notes style)
             PanelHeader(
                 menuItems = listOf(
-                    "Go to Today" to onGoToToday
+                    stringResource(R.string.calendar_go_to_today) to onGoToToday
                 )
             )
 
@@ -192,7 +200,7 @@ private fun SelectedEntryCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = entry.title ?: if (entry.type == EntryType.CANVAS) "Drawing Entry" else "Journal Entry",
+                    text = entry.title ?: if (entry.type == EntryType.CANVAS) stringResource(R.string.calendar_drawing_entry) else stringResource(R.string.calendar_journal_entry),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -211,7 +219,7 @@ private fun SelectedEntryCard(
                 } else if (entry.type == EntryType.CANVAS) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Handwritten S Pen note",
+                        text = stringResource(R.string.calendar_handwritten_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -256,7 +264,7 @@ private fun EmptyDayPlaceholder(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "No entry recorded yet",
+                text = stringResource(R.string.calendar_no_entry_title),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )

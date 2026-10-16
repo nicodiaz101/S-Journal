@@ -1,13 +1,10 @@
 package com.example.s_journal.ui.calendar
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.s_journal.SJournalApplication
 import com.example.s_journal.data.local.entity.JournalEntry
 import com.example.s_journal.domain.repository.JournalRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,6 +14,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import java.time.YearMonth
+import javax.inject.Inject
 
 data class CalendarUiState(
     val currentMonth: YearMonth = YearMonth.now(),
@@ -27,7 +25,8 @@ data class CalendarUiState(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class CalendarViewModel(
+@HiltViewModel
+class CalendarViewModel @Inject constructor(
     private val journalRepository: JournalRepository
 ) : ViewModel() {
 
@@ -91,14 +90,5 @@ class CalendarViewModel(
         val today = LocalDate.now()
         _selectedDate.value = today
         _currentMonth.value = YearMonth.now()
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as SJournalApplication)
-                CalendarViewModel(application.repository)
-            }
-        }
     }
 }

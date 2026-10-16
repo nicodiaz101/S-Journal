@@ -45,7 +45,7 @@ fun CalendarDayCell(
 
     Box(
         modifier = modifier
-            .size(44.dp)
+            .size(48.dp)
             .clip(CircleShape)
             .background(backgroundColor)
             .then(
@@ -55,7 +55,10 @@ fun CalendarDayCell(
                     Modifier
                 }
             )
-            .clickable { onDateClick(date) },
+            .clickable(
+                role = androidx.compose.ui.semantics.Role.Button,
+                onClick = { onDateClick(date) }
+            ),
         contentAlignment = Alignment.Center
     ) {
         Column(

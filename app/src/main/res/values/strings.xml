@@ -1,3 +1,43 @@
 <resources>
     <string name="app_name">S-Journal</string>
+
+    <!-- Calendar -->
+    <string name="calendar_today">Today</string>
+    <string name="calendar_go_to_today">Go to today</string>
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="calendar_no_entry_title">No entry recorded yet</string>
+    <string name="calendar_handwritten_note">Handwritten S Pen note</string>
+    <string name="calendar_drawing_entry">Drawing Entry</string>
+    <string name="calendar_journal_entry">Journal Entry</string>
+    <string name="calendar_add_now">+ ADD NOW</string>
+
+    <!-- Entry / Canvas -->
+    <string name="canvas_watermark_hint">Start writing with S Pen to create an entry</string>
+
+    <!-- Toolbar -->
+    <string name="toolbar_undo">Undo</string>
+    <string name="toolbar_redo">Redo</string>
+    <string name="toolbar_tool_pen">Pen</string>
+    <string name="toolbar_tool_pencil">Pencil</string>
+    <string name="toolbar_tool_highlighter">Highlighter</string>
+    <string name="toolbar_tool_eraser">Eraser</string>
+    <string name="toolbar_color_palette">Color Palette</string>
+    <string name="toolbar_toggle_ruled_lines">Toggle ruled lines</string>
+
+    <!-- Color & Thickness Picker -->
+    <string name="color_picker_title">Pen Options</string>
+    <string name="color_picker_ink_color">Ink Color</string>
+    <string name="color_picker_stroke_width">Stroke Width</string>
+    <string name="thickness_fine">Fine</string>
+    <string name="thickness_medium">Medium</string>
+    <string name="thickness_thick">Thick</string>
+    <string name="thickness_marker">Marker</string>
+
+    <!-- Fullscreen -->
+    <string name="fullscreen_enter">Enter fullscreen</string>
+    <string name="fullscreen_exit">Exit fullscreen</string>
+
+    <!-- Settings / Header -->
+    <string name="panel_header_settings">Settings</string>
 </resources>

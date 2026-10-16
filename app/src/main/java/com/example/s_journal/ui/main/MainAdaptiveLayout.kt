@@ -37,10 +37,12 @@ import com.example.s_journal.ui.calendar.CalendarPanelScreen
 import com.example.s_journal.ui.calendar.CalendarViewModel
 import com.example.s_journal.ui.entry.EntryPanelScreen
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun MainAdaptiveLayout(
     modifier: Modifier = Modifier,
-    viewModel: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
+    viewModel: CalendarViewModel = hiltViewModel()
 ) {
     val windowAdaptiveInfo = currentWindowAdaptiveInfo()
     val isTabletOrExpanded = windowAdaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)

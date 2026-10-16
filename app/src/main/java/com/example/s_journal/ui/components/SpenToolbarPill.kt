@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FormatLineSpacing
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Icon
@@ -26,7 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.s_journal.R
 import com.example.s_journal.theme.ToolbarPillShape
 
 enum class SpenTool {
@@ -66,7 +69,7 @@ fun SpenToolbarPill(
             IconButton(
                 onClick = onUndo,
                 enabled = canUndo,
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
@@ -74,7 +77,7 @@ fun SpenToolbarPill(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Undo,
-                    contentDescription = "Undo"
+                    contentDescription = stringResource(R.string.toolbar_undo)
                 )
             }
 
@@ -82,7 +85,7 @@ fun SpenToolbarPill(
             IconButton(
                 onClick = onRedo,
                 enabled = canRedo,
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
@@ -90,61 +93,75 @@ fun SpenToolbarPill(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Redo,
-                    contentDescription = "Redo"
+                    contentDescription = stringResource(R.string.toolbar_redo)
                 )
             }
 
             // Pen tool
             IconButton(
                 onClick = { onToolSelected(SpenTool.PEN) },
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = if (selectedTool == SpenTool.PEN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
                 Icon(
                     imageVector = Icons.Default.Create,
-                    contentDescription = "Pen"
+                    contentDescription = stringResource(R.string.toolbar_tool_pen)
+                )
+            }
+
+            // Pencil tool
+            IconButton(
+                onClick = { onToolSelected(SpenTool.PENCIL) },
+                modifier = Modifier.size(48.dp),
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = if (selectedTool == SpenTool.PENCIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.toolbar_tool_pencil)
                 )
             }
 
             // Highlighter tool
             IconButton(
                 onClick = { onToolSelected(SpenTool.HIGHLIGHTER) },
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = if (selectedTool == SpenTool.HIGHLIGHTER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
                 Icon(
                     imageVector = Icons.Default.Brush,
-                    contentDescription = "Highlighter"
+                    contentDescription = stringResource(R.string.toolbar_tool_highlighter)
                 )
             }
 
             // Eraser tool
             IconButton(
                 onClick = { onToolSelected(SpenTool.ERASER) },
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = if (selectedTool == SpenTool.ERASER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
                 Icon(
                     imageVector = Icons.Default.AutoFixHigh,
-                    contentDescription = "Eraser"
+                    contentDescription = stringResource(R.string.toolbar_tool_eraser)
                 )
             }
 
             // Color palette button with current active color dot
             IconButton(
                 onClick = onColorPickerClick,
-                modifier = Modifier.size(44.dp)
+                modifier = Modifier.size(48.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Palette,
-                        contentDescription = "Color Palette",
+                        contentDescription = stringResource(R.string.toolbar_color_palette),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Box(
@@ -161,11 +178,11 @@ fun SpenToolbarPill(
             // Ruled lines toggle
             IconButton(
                 onClick = onToggleRuledLines,
-                modifier = Modifier.size(44.dp)
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.FormatLineSpacing,
-                    contentDescription = "Toggle Ruled Lines",
+                    contentDescription = stringResource(R.string.toolbar_toggle_ruled_lines),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

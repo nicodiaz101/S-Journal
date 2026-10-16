@@ -24,7 +24,7 @@ object DatabaseModule {
             context,
             JournalDatabase::class.java,
             JournalDatabase.DATABASE_NAME
-        ).fallbackToDestructiveMigration(true).build()
+        ).build()
 
     }
 

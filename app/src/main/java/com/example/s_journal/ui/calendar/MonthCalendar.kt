@@ -32,7 +32,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.example.s_journal.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,16 +62,9 @@ fun MonthCalendar(
         DateTimeFormatter.ofPattern("MMMM yyyy", locale)
     }
 
-    val daysOfWeek = remember {
-        listOf(
-            DayOfWeek.MONDAY,
-            DayOfWeek.TUESDAY,
-            DayOfWeek.WEDNESDAY,
-            DayOfWeek.THURSDAY,
-            DayOfWeek.FRIDAY,
-            DayOfWeek.SATURDAY,
-            DayOfWeek.SUNDAY
-        )
+    val daysOfWeek = remember(locale) {
+        val firstDay = java.time.temporal.WeekFields.of(locale).firstDayOfWeek
+        (0L..6L).map { firstDay.plus(it) }
     }
 
     var totalDragX by remember { mutableFloatStateOf(0f) }
@@ -123,36 +118,38 @@ fun MonthCalendar(
                 if (!isCurrentMonthToday || selectedDate != LocalDate.now()) {
                     IconButton(
                         onClick = onGoToToday,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Today,
-                            contentDescription = "Today",
+                            contentDescription = stringResource(R.string.calendar_today),
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
 
                 IconButton(
                     onClick = onPreviousMonth,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                        contentDescription = "Previous Month",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = stringResource(R.string.calendar_previous_month),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
                 IconButton(
                     onClick = onNextMonth,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next Month",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        contentDescription = stringResource(R.string.calendar_next_month),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -199,7 +196,7 @@ fun MonthCalendar(
             },
             label = "MonthTransition"
         ) { targetMonth ->
-            val days = remember(targetMonth) { calculateCalendarGrid(targetMonth) }
+            val days = remember(targetMonth, locale) { calculateCalendarGrid(targetMonth, locale) }
             val weeks = days.chunked(7)
 
             Column(
@@ -233,12 +230,12 @@ fun MonthCalendar(
     }
 }
 
-private fun calculateCalendarGrid(yearMonth: YearMonth): List<LocalDate> {
+private fun calculateCalendarGrid(yearMonth: YearMonth, locale: Locale): List<LocalDate> {
     val firstDayOfMonth = yearMonth.atDay(1)
     val lastDayOfMonth = yearMonth.atEndOfMonth()
 
-    val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value
-    val leadingDaysCount = firstDayOfWeek - 1
+    val firstDayOfWeek = java.time.temporal.WeekFields.of(locale).firstDayOfWeek
+    val leadingDaysCount = (firstDayOfMonth.dayOfWeek.value - firstDayOfWeek.value + 7) % 7
 
     val days = mutableListOf<LocalDate>()
 

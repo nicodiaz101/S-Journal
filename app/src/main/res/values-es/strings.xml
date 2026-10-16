@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">S-Journal</string>
+
+    <!-- Calendar -->
+    <string name="calendar_today">Hoy</string>
+    <string name="calendar_go_to_today">Ir a hoy</string>
+    <string name="calendar_previous_month">Mes anterior</string>
+    <string name="calendar_next_month">Mes siguiente</string>
+    <string name="calendar_no_entry_title">Sin entradas aún</string>
+    <string name="calendar_handwritten_note">Nota manuscrita con S Pen</string>
+    <string name="calendar_drawing_entry">Dibujo</string>
+    <string name="calendar_journal_entry">Nota de diario</string>
+    <string name="calendar_add_now">+ AÑADIR AHORA</string>
+
+    <!-- Entry / Canvas -->
+    <string name="canvas_watermark_hint">Comienza a escribir con el S Pen para crear una entrada</string>
+
+    <!-- Toolbar -->
+    <string name="toolbar_undo">Deshacer</string>
+    <string name="toolbar_redo">Rehacer</string>
+    <string name="toolbar_tool_pen">Pluma</string>
+    <string name="toolbar_tool_pencil">Lápiz</string>
+    <string name="toolbar_tool_highlighter">Resaltador</string>
+    <string name="toolbar_tool_eraser">Borrador</string>
+    <string name="toolbar_color_palette">Paleta de colores</string>
+    <string name="toolbar_toggle_ruled_lines">Alternar líneas pautadas</string>
+
+    <!-- Color & Thickness Picker -->
+    <string name="color_picker_title">Opciones de pluma</string>
+    <string name="color_picker_ink_color">Color de tinta</string>
+    <string name="color_picker_stroke_width">Grosor de trazo</string>
+    <string name="thickness_fine">Fino</string>
+    <string name="thickness_medium">Medio</string>
+    <string name="thickness_thick">Grueso</string>
+    <string name="thickness_marker">Marcador</string>
+
+    <!-- Fullscreen -->
+    <string name="fullscreen_enter">Pantalla completa</string>
+    <string name="fullscreen_exit">Salir de pantalla completa</string>
+
+    <!-- Settings / Header -->
+    <string name="panel_header_settings">Ajustes</string>
+</resources>

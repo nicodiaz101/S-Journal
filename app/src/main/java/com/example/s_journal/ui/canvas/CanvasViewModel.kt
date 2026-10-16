@@ -2,17 +2,14 @@ package com.example.s_journal.ui.canvas
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.s_journal.SJournalApplication
 import com.example.s_journal.data.local.entity.JournalEntry
 import com.example.s_journal.data.model.EntryType
 import com.example.s_journal.domain.repository.JournalRepository
 import com.example.s_journal.ui.canvas.engine.StrokeSerializer
 import com.example.s_journal.ui.canvas.model.Stroke
 import com.example.s_journal.ui.components.SpenTool
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +22,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate
+import javax.inject.Inject
 
 data class CanvasUiState(
     val selectedDate: LocalDate = LocalDate.now(),
@@ -38,7 +36,8 @@ data class CanvasUiState(
     val isSaving: Boolean = false
 )
 
-class CanvasViewModel(
+@HiltViewModel
+class CanvasViewModel @Inject constructor(
     application: Application,
     private val journalRepository: JournalRepository
 ) : AndroidViewModel(application) {
@@ -221,14 +220,5 @@ class CanvasViewModel(
     private fun getStrokesFile(date: LocalDate): File {
         val strokesDir = File(getApplication<Application>().filesDir, "strokes")
         return File(strokesDir, "$date.sjink")
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as SJournalApplication)
-                CanvasViewModel(application, application.repository)
-            }
-        }
     }
 }

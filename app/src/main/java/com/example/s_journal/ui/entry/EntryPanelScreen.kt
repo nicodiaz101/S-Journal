@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material3.Icon
@@ -27,9 +29,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.s_journal.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.s_journal.data.local.entity.JournalEntry
@@ -44,6 +48,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun EntryPanelScreen(
     selectedDate: LocalDate,
@@ -51,7 +57,7 @@ fun EntryPanelScreen(
     isFullscreen: Boolean,
     onToggleFullscreen: () -> Unit,
     modifier: Modifier = Modifier,
-    canvasViewModel: CanvasViewModel = viewModel(factory = CanvasViewModel.Factory)
+    canvasViewModel: CanvasViewModel = hiltViewModel()
 ) {
     val canvasUiState by canvasViewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isSystemInDarkTheme()
@@ -119,6 +125,7 @@ fun EntryPanelScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.TopCenter)
+                        .statusBarsPadding()
                         .padding(top = 100.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -137,7 +144,7 @@ fun EntryPanelScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Start writing with S Pen to create an entry",
+                        text = stringResource(R.string.canvas_watermark_hint),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.25f),
                         textAlign = TextAlign.Center
@@ -151,6 +158,7 @@ fun EntryPanelScreen(
                 onToggleFullscreen = onToggleFullscreen,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
+                    .statusBarsPadding()
                     .padding(16.dp)
             )
 
@@ -171,6 +179,7 @@ fun EntryPanelScreen(
                 onToggleRuledLines = { canvasViewModel.onToggleRuledLines() },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
                     .padding(bottom = 24.dp)
             )
 

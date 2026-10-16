@@ -25,10 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.s_journal.R
 
 @Composable
 fun ColorPickerModal(
@@ -50,10 +52,10 @@ fun ColorPickerModal(
     )
 
     val thicknessPresets = listOf(
-        3f to "Fine",
-        6f to "Medium",
-        12f to "Thick",
-        22f to "Marker"
+        3f to R.string.thickness_fine,
+        6f to R.string.thickness_medium,
+        12f to R.string.thickness_thick,
+        22f to R.string.thickness_marker
     )
 
     Dialog(onDismissRequest = onDismissRequest) {
@@ -68,7 +70,7 @@ fun ColorPickerModal(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Pen Options",
+                    text = stringResource(R.string.color_picker_title),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -77,7 +79,7 @@ fun ColorPickerModal(
 
                 // Color palette grid
                 Text(
-                    text = "Ink Color",
+                    text = stringResource(R.string.color_picker_ink_color),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.Start)
@@ -133,7 +135,7 @@ fun ColorPickerModal(
 
                 // Thickness Presets
                 Text(
-                    text = "Stroke Width",
+                    text = stringResource(R.string.color_picker_stroke_width),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.Start)
@@ -145,7 +147,7 @@ fun ColorPickerModal(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    thicknessPresets.forEach { (width, label) ->
+                    thicknessPresets.forEach { (width, labelRes) ->
                         val isSelected = selectedWidth == width
                         Surface(
                             shape = RoundedCornerShape(12.dp),
@@ -160,7 +162,7 @@ fun ColorPickerModal(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = label,
+                                    text = stringResource(labelRes),
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     ),

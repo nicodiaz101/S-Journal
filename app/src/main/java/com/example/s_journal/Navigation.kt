@@ -19,7 +19,7 @@ fun MainNavigation() {
     entryProvider =
       entryProvider {
         entry<Main> {
-          MainAdaptiveLayout(modifier = Modifier.fillMaxSize().safeDrawingPadding())
+          MainAdaptiveLayout(modifier = Modifier.fillMaxSize())
         }
       },
   )

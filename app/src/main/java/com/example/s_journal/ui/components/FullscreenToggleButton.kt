@@ -11,7 +11,9 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.s_journal.R
 
 @Composable
 fun FullscreenToggleButton(
@@ -30,7 +32,9 @@ fun FullscreenToggleButton(
     ) {
         Icon(
             imageVector = if (isFullscreen) Icons.Default.FullscreenExit else Icons.Default.Fullscreen,
-            contentDescription = if (isFullscreen) "Exit Fullscreen" else "Enter Fullscreen",
+            contentDescription = stringResource(
+                if (isFullscreen) R.string.fullscreen_exit else R.string.fullscreen_enter
+            ),
             modifier = Modifier.size(24.dp)
         )
     }
