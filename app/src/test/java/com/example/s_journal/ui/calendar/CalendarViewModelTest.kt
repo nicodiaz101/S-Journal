@@ -20,14 +20,21 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CalendarViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
+    private val fixedInstant = Instant.parse("2026-10-16T12:00:00Z")
+    private val testClock: Clock = Clock.fixed(fixedInstant, ZoneId.of("UTC"))
+    private val expectedToday: LocalDate = LocalDate.of(2026, 10, 16)
+    private val expectedMonth: YearMonth = YearMonth.of(2026, 10)
+
     private lateinit var fakeRepository: FakeJournalRepository
     private lateinit var viewModel: CalendarViewModel
 
@@ -35,7 +42,7 @@ class CalendarViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeJournalRepository()
-        viewModel = CalendarViewModel(fakeRepository)
+        viewModel = CalendarViewModel(fakeRepository, testClock)
     }
 
     @After
@@ -49,8 +56,8 @@ class CalendarViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals(LocalDate.now(), state.selectedDate)
-        assertEquals(YearMonth.now(), state.currentMonth)
+        assertEquals(expectedToday, state.selectedDate)
+        assertEquals(expectedMonth, state.currentMonth)
     }
 
     @Test
@@ -94,8 +101,8 @@ class CalendarViewModelTest {
         viewModel.onGoToToday()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals(LocalDate.now(), viewModel.uiState.value.selectedDate)
-        assertEquals(YearMonth.now(), viewModel.uiState.value.currentMonth)
+        assertEquals(expectedToday, viewModel.uiState.value.selectedDate)
+        assertEquals(expectedMonth, viewModel.uiState.value.currentMonth)
     }
 
     @Test

@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import com.example.s_journal.theme.AnimationTokens
+import com.example.s_journal.theme.PanelSquircleShape
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -60,7 +60,7 @@ fun MainAdaptiveLayout(
         }
 
         val isDark = isSystemInDarkTheme()
-        val panelShape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+        val panelShape = PanelSquircleShape
 
         Row(
             modifier = modifier

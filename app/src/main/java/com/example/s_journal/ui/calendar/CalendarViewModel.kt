@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import java.time.Clock
 import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
@@ -27,11 +28,12 @@ data class CalendarUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    private val journalRepository: JournalRepository
+    private val journalRepository: JournalRepository,
+    private val clock: Clock = Clock.systemDefaultZone()
 ) : ViewModel() {
 
-    private val _currentMonth = MutableStateFlow(YearMonth.now())
-    private val _selectedDate = MutableStateFlow(LocalDate.now())
+    private val _currentMonth = MutableStateFlow(YearMonth.now(clock))
+    private val _selectedDate = MutableStateFlow(LocalDate.now(clock))
 
     private val _datesWithEntries = journalRepository.getAllDatesWithEntries()
         .stateIn(
@@ -87,8 +89,8 @@ class CalendarViewModel @Inject constructor(
     }
 
     fun onGoToToday() {
-        val today = LocalDate.now()
+        val today = LocalDate.now(clock)
         _selectedDate.value = today
-        _currentMonth.value = YearMonth.now()
+        _currentMonth.value = YearMonth.now(clock)
     }
 }

@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.s_journal.data.local.entity.JournalEntry
 import com.example.s_journal.data.model.EntryType
 import com.example.s_journal.theme.CardSquircleShape
+import com.example.s_journal.theme.InnerCardShape
 import com.example.s_journal.ui.components.AddNowButton
 import com.example.s_journal.ui.components.PanelHeader
 import com.example.s_journal.ui.components.SJournalCard
@@ -171,7 +172,6 @@ private fun SelectedEntryCard(
     SJournalCard(
         modifier = modifier
             .fillMaxWidth()
-            .clip(CardSquircleShape)
             .clickable { onClick() },
         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
     ) {
@@ -184,7 +184,7 @@ private fun SelectedEntryCard(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .clip(CardSquircleShape)
+                    .clip(InnerCardShape)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {

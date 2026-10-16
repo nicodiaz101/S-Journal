@@ -14,9 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,12 +23,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.s_journal.R
+import com.example.s_journal.theme.CardSquircleShape
 
 @Composable
 fun ColorPickerModal(
@@ -40,6 +44,8 @@ fun ColorPickerModal(
     onWidthSelected: (Float) -> Unit,
     onDismissRequest: () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
     val palette = listOf(
         Color(0xFFFFFFFF), // White
         Color(0xFF000000), // Black
@@ -60,7 +66,7 @@ fun ColorPickerModal(
 
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
-            shape = RoundedCornerShape(24.dp),
+            shape = CardSquircleShape,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp,
             modifier = Modifier.width(320.dp)
@@ -95,20 +101,32 @@ fun ColorPickerModal(
                         val isSelected = color.toArgb() == selectedColor
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(color)
-                                .border(
-                                    width = if (isSelected) 3.dp else 1.dp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0x33888888),
-                                    shape = CircleShape
-                                )
-                                .clickable { onColorSelected(color.toArgb()) }
-                        )
+                                .size(48.dp)
+                                .clickable(
+                                    role = Role.RadioButton,
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        onColorSelected(color.toArgb())
+                                    }
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(color)
+                                    .border(
+                                        width = if (isSelected) 3.dp else 1.dp,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0x33888888),
+                                        shape = CircleShape
+                                    )
+                            )
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -118,16 +136,28 @@ fun ColorPickerModal(
                         val isSelected = color.toArgb() == selectedColor
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(color)
-                                .border(
-                                    width = if (isSelected) 3.dp else 1.dp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0x33888888),
-                                    shape = CircleShape
-                                )
-                                .clickable { onColorSelected(color.toArgb()) }
-                        )
+                                .size(48.dp)
+                                .clickable(
+                                    role = Role.RadioButton,
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        onColorSelected(color.toArgb())
+                                    }
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(color)
+                                    .border(
+                                        width = if (isSelected) 3.dp else 1.dp,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0x33888888),
+                                        shape = CircleShape
+                                    )
+                            )
+                        }
                     }
                 }
 
@@ -149,20 +179,28 @@ fun ColorPickerModal(
                 ) {
                     thicknessPresets.forEach { (width, labelRes) ->
                         val isSelected = selectedWidth == width
+                        val label = stringResource(labelRes)
                         Surface(
-                            shape = RoundedCornerShape(12.dp),
+                            shape = MaterialTheme.shapes.small,
                             color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier
                                 .weight(1f)
+                                .height(48.dp)
                                 .padding(horizontal = 2.dp)
-                                .clickable { onWidthSelected(width) }
+                                .clickable(
+                                    role = Role.RadioButton,
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        onWidthSelected(width)
+                                    }
+                                )
                         ) {
                             Box(
-                                modifier = Modifier.padding(vertical = 8.dp),
+                                modifier = Modifier.fillMaxWidth(),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = stringResource(labelRes),
+                                    text = label,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     ),
