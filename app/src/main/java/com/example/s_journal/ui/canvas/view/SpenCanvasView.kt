@@ -2,6 +2,7 @@ package com.example.s_journal.ui.canvas.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.util.AttributeSet
@@ -36,18 +37,46 @@ class SpenCanvasView @JvmOverloads constructor(
     private var activeStrokePoints = mutableListOf<StrokePoint>()
     private var isErasing = false
 
-    init {
-        // Hardware accelerated canvas
-        setLayerType(LAYER_TYPE_HARDWARE, null)
+    // Hardware backing bitmap: committed strokes are rendered once and drawn in O(1) time
+    private var backingBitmap: Bitmap? = null
+    private var backingCanvas: Canvas? = null
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        if (w > 0 && h > 0) {
+            val oldBitmap = backingBitmap
+            val newBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val newCanvas = Canvas(newBitmap)
+            backingBitmap = newBitmap
+            backingCanvas = newCanvas
+            oldBitmap?.recycle()
+            rebuildBackingBitmap()
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        backingBitmap?.recycle()
+        backingBitmap = null
+        backingCanvas = null
+    }
+
+    private fun rebuildBackingBitmap() {
+        val bitmap = backingBitmap ?: return
+        val canvas = backingCanvas ?: return
+        bitmap.eraseColor(Color.TRANSPARENT)
+        strokeRenderer.renderStrokes(canvas, strokeBuffer.strokes)
     }
 
     fun setStrokes(strokes: List<Stroke>) {
         strokeBuffer.setStrokes(strokes)
+        rebuildBackingBitmap()
         invalidate()
     }
 
     fun undo() {
         if (strokeBuffer.undo()) {
+            rebuildBackingBitmap()
             invalidate()
             onStrokesChangedListener?.invoke()
         }
@@ -55,6 +84,7 @@ class SpenCanvasView @JvmOverloads constructor(
 
     fun redo() {
         if (strokeBuffer.redo()) {
+            rebuildBackingBitmap()
             invalidate()
             onStrokesChangedListener?.invoke()
         }
@@ -62,6 +92,7 @@ class SpenCanvasView @JvmOverloads constructor(
 
     fun clear() {
         strokeBuffer.clear()
+        backingBitmap?.eraseColor(Color.TRANSPARENT)
         invalidate()
         onStrokesChangedListener?.invoke()
     }
@@ -69,14 +100,19 @@ class SpenCanvasView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        // 1. Draw all committed strokes
-        strokeRenderer.renderStrokes(canvas, strokeBuffer.strokes)
+        // 1. Draw all committed strokes from backing bitmap in O(1)
+        val bitmap = backingBitmap
+        if (bitmap != null) {
+            canvas.drawBitmap(bitmap, 0f, 0f, null)
+        } else {
+            strokeRenderer.renderStrokes(canvas, strokeBuffer.strokes)
+        }
 
         // 2. Draw currently active stroke in progress
         if (activeStrokePoints.isNotEmpty() && !isErasing) {
             val activeStroke = Stroke(
                 id = "active_stroke",
-                points = activeStrokePoints.toList(),
+                points = activeStrokePoints,
                 color = currentColor,
                 baseWidth = currentStrokeWidth,
                 tool = currentTool
@@ -85,27 +121,26 @@ class SpenCanvasView @JvmOverloads constructor(
         }
     }
 
+    private fun commitActiveStroke() {
+        if (activeStrokePoints.isNotEmpty()) {
+            val newStroke = Stroke(
+                id = UUID.randomUUID().toString(),
+                points = activeStrokePoints.toList(),
+                color = currentColor,
+                baseWidth = currentStrokeWidth,
+                tool = currentTool
+            )
+            strokeBuffer.addStroke(newStroke)
+            backingCanvas?.let { strokeRenderer.renderStroke(it, newStroke) }
+            activeStrokePoints.clear()
+            invalidate()
+            onStrokesChangedListener?.invoke()
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        // Find stylus pointer index
-        var stylusPointerIndex = -1
-        for (i in 0 until event.pointerCount) {
-            val toolType = event.getToolType(i)
-            if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
-                stylusPointerIndex = i
-                break
-            }
-        }
-
-        // Strict Palm Rejection: If no S Pen stylus is detected in the touch event, reject immediately
-        if (strictPalmRejection && stylusPointerIndex == -1) {
-            return false
-        }
-
-        val actionIndex = event.actionIndex
-        val actionMasked = event.actionMasked
-
-        // Track active stylus pointer by ID to avoid premature stroke termination if finger/palm releases
+        // Track active stylus pointer by ID to avoid premature stroke termination if finger/palm touches
         var activeStylusIndex = -1
         for (i in 0 until event.pointerCount) {
             val toolType = event.getToolType(i)
@@ -119,6 +154,9 @@ class SpenCanvasView @JvmOverloads constructor(
         if (strictPalmRejection && activeStylusIndex == -1) {
             return false
         }
+
+        val actionIndex = event.actionIndex
+        val actionMasked = event.actionMasked
 
         val pointerIndex = if (activeStylusIndex != -1) activeStylusIndex else 0
         val toolType = event.getToolType(pointerIndex)
@@ -145,6 +183,7 @@ class SpenCanvasView @JvmOverloads constructor(
                     strokeBuffer.beginEraseGesture()
                     val erased = strokeBuffer.eraseStrokesIntersecting(x, y, currentStrokeWidth * 3f)
                     if (erased) {
+                        rebuildBackingBitmap()
                         invalidate()
                         onStrokesChangedListener?.invoke()
                     }
@@ -162,6 +201,7 @@ class SpenCanvasView @JvmOverloads constructor(
                 if (isErasing || effectiveTool == SpenTool.ERASER) {
                     val erased = strokeBuffer.eraseStrokesIntersecting(x, y, currentStrokeWidth * 3f)
                     if (erased) {
+                        rebuildBackingBitmap()
                         invalidate()
                         onStrokesChangedListener?.invoke()
                     }
@@ -179,18 +219,8 @@ class SpenCanvasView @JvmOverloads constructor(
                     strokeBuffer.endEraseGesture()
                     isErasing = false
                     onStrokesChangedListener?.invoke()
-                } else if (effectiveTool != SpenTool.ERASER && activeStrokePoints.isNotEmpty()) {
-                    val newStroke = Stroke(
-                        id = UUID.randomUUID().toString(),
-                        points = activeStrokePoints.toList(),
-                        color = currentColor,
-                        baseWidth = currentStrokeWidth,
-                        tool = currentTool
-                    )
-                    strokeBuffer.addStroke(newStroke)
-                    activeStrokePoints.clear()
-                    invalidate()
-                    onStrokesChangedListener?.invoke()
+                } else if (effectiveTool != SpenTool.ERASER) {
+                    commitActiveStroke()
                 } else {
                     activeStrokePoints.clear()
                 }
@@ -204,18 +234,8 @@ class SpenCanvasView @JvmOverloads constructor(
                         strokeBuffer.endEraseGesture()
                         isErasing = false
                         onStrokesChangedListener?.invoke()
-                    } else if (effectiveTool != SpenTool.ERASER && activeStrokePoints.isNotEmpty()) {
-                        val newStroke = Stroke(
-                            id = UUID.randomUUID().toString(),
-                            points = activeStrokePoints.toList(),
-                            color = currentColor,
-                            baseWidth = currentStrokeWidth,
-                            tool = currentTool
-                        )
-                        strokeBuffer.addStroke(newStroke)
-                        activeStrokePoints.clear()
-                        invalidate()
-                        onStrokesChangedListener?.invoke()
+                    } else if (effectiveTool != SpenTool.ERASER) {
+                        commitActiveStroke()
                     } else {
                         activeStrokePoints.clear()
                     }
@@ -228,6 +248,7 @@ class SpenCanvasView @JvmOverloads constructor(
                 if (isErasing) {
                     strokeBuffer.cancelEraseGesture()
                     isErasing = false
+                    rebuildBackingBitmap()
                 }
                 activeStrokePoints.clear()
                 invalidate()
