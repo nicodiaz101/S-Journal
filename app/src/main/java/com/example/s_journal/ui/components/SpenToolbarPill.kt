@@ -27,6 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.s_journal.R
@@ -46,6 +48,8 @@ fun SpenToolbarPill(
     onToggleRuledLines: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
+
     Surface(
         modifier = modifier
             .clip(ToolbarPillShape),
@@ -61,7 +65,10 @@ fun SpenToolbarPill(
         ) {
             // Undo
             IconButton(
-                onClick = onUndo,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onUndo()
+                },
                 enabled = canUndo,
                 modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
@@ -77,7 +84,10 @@ fun SpenToolbarPill(
 
             // Redo
             IconButton(
-                onClick = onRedo,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onRedo()
+                },
                 enabled = canRedo,
                 modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
@@ -93,7 +103,10 @@ fun SpenToolbarPill(
 
             // Pen tool
             IconButton(
-                onClick = { onToolSelected(SpenTool.PEN) },
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onToolSelected(SpenTool.PEN)
+                },
                 modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = if (selectedTool == SpenTool.PEN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -107,7 +120,10 @@ fun SpenToolbarPill(
 
             // Pencil tool
             IconButton(
-                onClick = { onToolSelected(SpenTool.PENCIL) },
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onToolSelected(SpenTool.PENCIL)
+                },
                 modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = if (selectedTool == SpenTool.PENCIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -121,7 +137,10 @@ fun SpenToolbarPill(
 
             // Highlighter tool
             IconButton(
-                onClick = { onToolSelected(SpenTool.HIGHLIGHTER) },
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onToolSelected(SpenTool.HIGHLIGHTER)
+                },
                 modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = if (selectedTool == SpenTool.HIGHLIGHTER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -135,7 +154,10 @@ fun SpenToolbarPill(
 
             // Eraser tool
             IconButton(
-                onClick = { onToolSelected(SpenTool.ERASER) },
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onToolSelected(SpenTool.ERASER)
+                },
                 modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     contentColor = if (selectedTool == SpenTool.ERASER) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -149,7 +171,10 @@ fun SpenToolbarPill(
 
             // Color palette button with current active color dot
             IconButton(
-                onClick = onColorPickerClick,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onColorPickerClick()
+                },
                 modifier = Modifier.size(48.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
@@ -171,7 +196,10 @@ fun SpenToolbarPill(
 
             // Ruled lines toggle
             IconButton(
-                onClick = onToggleRuledLines,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onToggleRuledLines()
+                },
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(

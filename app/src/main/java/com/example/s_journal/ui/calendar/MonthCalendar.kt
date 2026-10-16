@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import com.example.s_journal.theme.AnimationTokens
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -185,19 +186,26 @@ fun MonthCalendar(
             targetState = currentMonth,
             transitionSpec = {
                 if (targetState > initialState) {
-                    (slideInHorizontally { width -> width / 2 } + fadeIn()).togetherWith(
-                        slideOutHorizontally { width -> -width / 2 } + fadeOut()
+                    (slideInHorizontally(animationSpec = AnimationTokens.panelSpring()) { width -> width / 2 } +
+                            fadeIn(animationSpec = AnimationTokens.visibilitySpring())).togetherWith(
+                        slideOutHorizontally(animationSpec = AnimationTokens.panelSpring()) { width -> -width / 2 } +
+                                fadeOut(animationSpec = AnimationTokens.visibilitySpring())
                     )
                 } else {
-                    (slideInHorizontally { width -> -width / 2 } + fadeIn()).togetherWith(
-                        slideOutHorizontally { width -> width / 2 } + fadeOut()
+                    (slideInHorizontally(animationSpec = AnimationTokens.panelSpring()) { width -> -width / 2 } +
+                            fadeIn(animationSpec = AnimationTokens.visibilitySpring())).togetherWith(
+                        slideOutHorizontally(animationSpec = AnimationTokens.panelSpring()) { width -> width / 2 } +
+                                fadeOut(animationSpec = AnimationTokens.visibilitySpring())
                     )
                 }
             },
             label = "MonthTransition"
         ) { targetMonth ->
             val days = remember(targetMonth, locale) { calculateCalendarGrid(targetMonth, locale) }
-            val weeks = days.chunked(7)
+            val weeks = remember(days) { days.chunked(7) }
+            val today = remember { LocalDate.now() }
+            val targetYear = targetMonth.year
+            val targetMonthValue = targetMonth.monthValue
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -216,9 +224,9 @@ fun MonthCalendar(
                                 CalendarDayCell(
                                     date = date,
                                     isSelected = date == selectedDate,
-                                    isToday = date == LocalDate.now(),
+                                    isToday = date == today,
                                     hasEntry = datesWithEntries.contains(date),
-                                    isCurrentMonth = YearMonth.from(date) == targetMonth,
+                                    isCurrentMonth = date.year == targetYear && date.monthValue == targetMonthValue,
                                     onDateClick = onDateSelected
                                 )
                             }

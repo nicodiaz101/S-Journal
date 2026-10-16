@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.s_journal.theme.SJournalIndicatorColor
@@ -31,6 +33,8 @@ fun CalendarDayCell(
     onDateClick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
+
     val textColor = when {
         isSelected -> MaterialTheme.colorScheme.onPrimary
         !isCurrentMonth -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
@@ -57,7 +61,10 @@ fun CalendarDayCell(
             )
             .clickable(
                 role = androidx.compose.ui.semantics.Role.Button,
-                onClick = { onDateClick(date) }
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onDateClick(date)
+                }
             ),
         contentAlignment = Alignment.Center
     ) {

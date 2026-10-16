@@ -2,11 +2,11 @@ package com.example.s_journal.ui.main
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import com.example.s_journal.theme.AnimationTokens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -70,8 +70,10 @@ fun MainAdaptiveLayout(
             // Left Panel (Rounded right edge with visible drop shadow)
             AnimatedVisibility(
                 visible = !isFullscreen,
-                enter = fadeIn(animationSpec = tween(250)) + expandHorizontally(animationSpec = tween(250)),
-                exit = fadeOut(animationSpec = tween(200)) + shrinkHorizontally(animationSpec = tween(200)),
+                enter = fadeIn(animationSpec = AnimationTokens.visibilitySpring()) +
+                        expandHorizontally(animationSpec = AnimationTokens.panelSpring()),
+                exit = fadeOut(animationSpec = AnimationTokens.visibilitySpring()) +
+                        shrinkHorizontally(animationSpec = AnimationTokens.panelSpring()),
                 modifier = Modifier.zIndex(2f)
             ) {
                 Surface(
