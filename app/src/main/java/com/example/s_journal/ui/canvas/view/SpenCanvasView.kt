@@ -102,7 +102,25 @@ class SpenCanvasView @JvmOverloads constructor(
             return false
         }
 
-        val pointerIndex = if (stylusPointerIndex != -1) stylusPointerIndex else 0
+        val actionIndex = event.actionIndex
+        val actionMasked = event.actionMasked
+
+        // Track active stylus pointer by ID to avoid premature stroke termination if finger/palm releases
+        var activeStylusIndex = -1
+        for (i in 0 until event.pointerCount) {
+            val toolType = event.getToolType(i)
+            if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
+                activeStylusIndex = i
+                break
+            }
+        }
+
+        // Strict Palm Rejection: If no S Pen stylus is present anywhere in this event, ignore
+        if (strictPalmRejection && activeStylusIndex == -1) {
+            return false
+        }
+
+        val pointerIndex = if (activeStylusIndex != -1) activeStylusIndex else 0
         val toolType = event.getToolType(pointerIndex)
 
         // S Pen primary side button held down switches to Eraser mode dynamically
@@ -116,9 +134,12 @@ class SpenCanvasView @JvmOverloads constructor(
         val x = event.getX(pointerIndex)
         val y = event.getY(pointerIndex)
 
-        when (event.actionMasked) {
+        when (actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                // Low latency: Request unbuffered dispatch to eliminate vsync batching delays
+                requestUnbufferedDispatch(event)
                 parent?.requestDisallowInterceptTouchEvent(true)
+
                 if (effectiveTool == SpenTool.ERASER) {
                     isErasing = true
                     val erased = strokeBuffer.eraseStrokesIntersecting(x, y, currentStrokeWidth * 3f)
@@ -151,7 +172,7 @@ class SpenCanvasView @JvmOverloads constructor(
                 return true
             }
 
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+            MotionEvent.ACTION_UP -> {
                 parent?.requestDisallowInterceptTouchEvent(false)
                 if (!isErasing && effectiveTool != SpenTool.ERASER && activeStrokePoints.isNotEmpty()) {
                     val newStroke = Stroke(
@@ -165,8 +186,33 @@ class SpenCanvasView @JvmOverloads constructor(
                     activeStrokePoints.clear()
                     invalidate()
                     onStrokesChangedListener?.invoke()
+                } else {
+                    activeStrokePoints.clear()
                 }
                 isErasing = false
+                return true
+            }
+
+            MotionEvent.ACTION_POINTER_UP -> {
+                // Only commit stroke if the pointer that lifted was the stylus
+                if (actionIndex == activeStylusIndex) {
+                    if (!isErasing && effectiveTool != SpenTool.ERASER && activeStrokePoints.isNotEmpty()) {
+                        val newStroke = Stroke(
+                            id = UUID.randomUUID().toString(),
+                            points = activeStrokePoints.toList(),
+                            color = currentColor,
+                            baseWidth = currentStrokeWidth,
+                            tool = currentTool
+                        )
+                        strokeBuffer.addStroke(newStroke)
+                        activeStrokePoints.clear()
+                        invalidate()
+                        onStrokesChangedListener?.invoke()
+                    } else {
+                        activeStrokePoints.clear()
+                    }
+                    isErasing = false
+                }
                 return true
             }
 

@@ -73,6 +73,10 @@ fun EntryPanelScreen(
         canvasViewModel.setDate(selectedDate)
     }
 
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_STOP) {
+        canvasViewModel.flushPendingSave()
+    }
+
     var showColorPicker by remember { mutableStateOf(false) }
     var canvasViewInstance by remember { mutableStateOf<SpenCanvasView?>(null) }
 
@@ -100,8 +104,8 @@ fun EntryPanelScreen(
                 currentTool = canvasUiState.currentTool,
                 currentColor = canvasUiState.currentColor,
                 currentStrokeWidth = canvasUiState.currentStrokeWidth,
-                onStrokesChanged = { updatedStrokes ->
-                    canvasViewModel.onStrokesChanged(updatedStrokes)
+                onStrokesChanged = { updatedStrokes, canUndo, canRedo ->
+                    canvasViewModel.onStrokesChanged(updatedStrokes, canUndo, canRedo)
                 },
                 canvasViewRef = { view ->
                     canvasViewInstance = view

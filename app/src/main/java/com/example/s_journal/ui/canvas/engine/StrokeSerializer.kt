@@ -66,7 +66,10 @@ object StrokeSerializer {
         }
 
         val strokeCount = dataIn.readInt()
-        val strokes = ArrayList<Stroke>(strokeCount)
+        if (strokeCount < 0 || strokeCount > 500_000) {
+            throw IllegalArgumentException("Invalid stroke count: $strokeCount")
+        }
+        val strokes = ArrayList<Stroke>(strokeCount.coerceAtMost(10_000))
 
         for (i in 0 until strokeCount) {
             val id = dataIn.readUTF()
@@ -81,8 +84,11 @@ object StrokeSerializer {
             val color = dataIn.readInt()
             val baseWidth = dataIn.readFloat()
             val pointCount = dataIn.readInt()
+            if (pointCount < 0 || pointCount > 1_000_000) {
+                throw IllegalArgumentException("Invalid point count: $pointCount")
+            }
 
-            val points = ArrayList<StrokePoint>(pointCount)
+            val points = ArrayList<StrokePoint>(pointCount.coerceAtMost(10_000))
             for (j in 0 until pointCount) {
                 val x = dataIn.readFloat()
                 val y = dataIn.readFloat()
@@ -107,8 +113,17 @@ object StrokeSerializer {
 
     fun saveToFile(file: File, strokes: List<Stroke>) {
         file.parentFile?.mkdirs()
+        val tempFile = File(file.parentFile, "${file.name}.tmp")
         val bytes = serialize(strokes)
-        FileOutputStream(file).use { it.write(bytes) }
+        FileOutputStream(tempFile).use { it.write(bytes) }
+        if (!tempFile.renameTo(file)) {
+            // Fallback for filesystems that do not support atomic rename over existing file
+            file.delete()
+            if (!tempFile.renameTo(file)) {
+                FileOutputStream(file).use { it.write(bytes) }
+                tempFile.delete()
+            }
+        }
     }
 
     fun loadFromFile(file: File): List<Stroke> {

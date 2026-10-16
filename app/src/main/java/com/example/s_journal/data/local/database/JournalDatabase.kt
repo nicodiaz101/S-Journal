@@ -9,7 +9,7 @@ import com.example.s_journal.data.local.entity.JournalEntry
 @Database(
     entities = [JournalEntry::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class JournalDatabase : RoomDatabase() {

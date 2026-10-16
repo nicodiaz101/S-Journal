@@ -16,7 +16,7 @@ fun SpenCanvasComposable(
     currentTool: SpenTool,
     currentColor: Int,
     currentStrokeWidth: Float,
-    onStrokesChanged: (List<Stroke>) -> Unit,
+    onStrokesChanged: (strokes: List<Stroke>, canUndo: Boolean, canRedo: Boolean) -> Unit,
     modifier: Modifier = Modifier,
     canvasViewRef: ((SpenCanvasView) -> Unit)? = null
 ) {
@@ -50,7 +50,7 @@ fun SpenCanvasComposable(
         factory = {
             canvasView.apply {
                 onStrokesChangedListener = {
-                    onStrokesChanged(strokeBuffer.strokes)
+                    onStrokesChanged(strokeBuffer.strokes, strokeBuffer.canUndo, strokeBuffer.canRedo)
                 }
             }
         },

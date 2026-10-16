@@ -7,7 +7,12 @@ import com.example.s_journal.data.model.EntryType
 import java.time.Instant
 import java.time.LocalDate
 
-@Entity(tableName = "journal_entries")
+import androidx.room.Index
+
+@Entity(
+    tableName = "journal_entries",
+    indices = [Index(value = ["date"], unique = false)]
+)
 data class JournalEntry(
     @PrimaryKey
     @ColumnInfo(name = "id")
