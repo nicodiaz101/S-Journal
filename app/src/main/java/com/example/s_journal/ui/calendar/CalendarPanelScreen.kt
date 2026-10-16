@@ -83,8 +83,8 @@ internal fun CalendarPanelContent(
     onGoToToday: () -> Unit,
     onAddEntry: () -> Unit,
     onEntryClick: (JournalEntry) -> Unit,
-    showAddButton: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showAddButton: Boolean = false
 ) {
     Surface(
         modifier = modifier.fillMaxHeight(),

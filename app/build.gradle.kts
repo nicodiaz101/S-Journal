@@ -46,10 +46,42 @@ android {
         excludes += "/META-INF/{AL2.0,LGPL2.1}"
       }
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
+    lint {
+        abortOnError = true
+        checkReleaseBuilds = true
+        error += setOf(
+            "DrawAllocation",
+            "MissingTranslation",
+            "ExtraTranslation",
+            "HardcodedText",
+            "StringFormatInvalid",
+            "StringFormatMatches",
+            "ModifierParameter",
+            "ObsoleteSdkInt"
+        )
+    }
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+tasks.register("verifyAgentChanges") {
+    group = "verification"
+    description = "Runs full compilation (main, unitTest, androidTest), unit tests, strict Android Lint, and debug APK assembly."
+    dependsOn(
+        "compileDebugKotlin",
+        "compileDebugUnitTestKotlin",
+        "compileDebugAndroidTestKotlin",
+        "testDebugUnitTest",
+        "lintDebug",
+        "assembleDebug"
+    )
 }
 
 dependencies {

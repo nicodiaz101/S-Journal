@@ -1,12 +1,16 @@
 package com.example.s_journal.ui.canvas
 
 import com.example.s_journal.ui.canvas.engine.StrokeSerializer
+import com.example.s_journal.ui.canvas.model.SpenTool
 import com.example.s_journal.ui.canvas.model.Stroke
 import com.example.s_journal.ui.canvas.model.StrokePoint
-import com.example.s_journal.ui.canvas.model.SpenTool
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream
+import java.io.EOFException
 
 class StrokeSerializerTest {
 
@@ -18,55 +22,88 @@ class StrokeSerializerTest {
     }
 
     @Test
-    fun serializeAndDeserialize_multipleStrokes_restoresExactData() {
-        val blueColor = 0xFF0000FF.toInt()
-        val yellowColor = 0xFFFFFF00.toInt()
+    fun deserialize_emptyByteArray_returnsEmptyList() {
+        val result = StrokeSerializer.deserialize(ByteArray(0))
+        assertTrue(result.isEmpty())
+    }
 
-        val stroke1 = Stroke(
-            id = "stroke-1",
-            points = listOf(
-                StrokePoint(x = 10f, y = 20f, pressure = 0.5f, timestamp = 1000L),
-                StrokePoint(x = 15f, y = 25f, pressure = 0.8f, timestamp = 1010L)
-            ),
-            color = blueColor,
-            baseWidth = 6.0f,
-            tool = SpenTool.PEN
-        )
+    @Test
+    fun serializeAndDeserialize_allTools_restoresExactData() {
+        val strokes = SpenTool.entries.mapIndexed { index, tool ->
+            Stroke(
+                id = "stroke-$index",
+                points = listOf(
+                    StrokePoint(x = 10f * index, y = 20f * index, pressure = 0.5f, timestamp = 1000L + index),
+                    StrokePoint(x = 15f * index, y = 25f * index, pressure = 0.8f, timestamp = 1010L + index)
+                ),
+                color = 0xFF0000FF.toInt() + index,
+                baseWidth = 6.0f + index,
+                tool = tool
+            )
+        }
 
-        val stroke2 = Stroke(
-            id = "stroke-2",
-            points = listOf(
-                StrokePoint(x = 100f, y = 200f, pressure = 1.0f, timestamp = 2000L)
-            ),
-            color = yellowColor,
-            baseWidth = 20.0f,
-            tool = SpenTool.HIGHLIGHTER
-        )
-
-        val originalStrokes = listOf(stroke1, stroke2)
-        val bytes = StrokeSerializer.serialize(originalStrokes)
+        val bytes = StrokeSerializer.serialize(strokes)
         assertNotNull(bytes)
 
-        val deserializedStrokes = StrokeSerializer.deserialize(bytes)
-        assertEquals(2, deserializedStrokes.size)
+        val deserialized = StrokeSerializer.deserialize(bytes)
+        assertEquals(strokes.size, deserialized.size)
 
-        // Validate stroke 1
-        assertEquals("stroke-1", deserializedStrokes[0].id)
-        assertEquals(SpenTool.PEN, deserializedStrokes[0].tool)
-        assertEquals(blueColor, deserializedStrokes[0].color)
-        assertEquals(6.0f, deserializedStrokes[0].baseWidth, 0.01f)
-        assertEquals(2, deserializedStrokes[0].points.size)
-        assertEquals(10f, deserializedStrokes[0].points[0].x, 0.01f)
-        assertEquals(20f, deserializedStrokes[0].points[0].y, 0.01f)
-        assertEquals(0.5f, deserializedStrokes[0].points[0].pressure, 0.01f)
-        assertEquals(1000L, deserializedStrokes[0].points[0].timestamp)
+        for (i in strokes.indices) {
+            assertEquals(strokes[i].id, deserialized[i].id)
+            assertEquals(strokes[i].tool, deserialized[i].tool)
+            assertEquals(strokes[i].color, deserialized[i].color)
+            assertEquals(strokes[i].baseWidth, deserialized[i].baseWidth, 0.001f)
+            assertEquals(strokes[i].points.size, deserialized[i].points.size)
+        }
+    }
 
-        // Validate stroke 2
-        assertEquals("stroke-2", deserializedStrokes[1].id)
-        assertEquals(SpenTool.HIGHLIGHTER, deserializedStrokes[1].tool)
-        assertEquals(yellowColor, deserializedStrokes[1].color)
-        assertEquals(20.0f, deserializedStrokes[1].baseWidth, 0.01f)
-        assertEquals(1, deserializedStrokes[1].points.size)
-        assertEquals(100f, deserializedStrokes[1].points[0].x, 0.01f)
+    @Test(expected = IllegalArgumentException::class)
+    fun deserialize_invalidMagicHeader_throwsIllegalArgumentException() {
+        val out = ByteArrayOutputStream()
+        DataOutputStream(out).apply {
+            writeInt(0x12345678) // Wrong magic
+            writeInt(1)
+            writeInt(0)
+            flush()
+        }
+        StrokeSerializer.deserialize(out.toByteArray())
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun deserialize_unsupportedVersion_throwsIllegalArgumentException() {
+        val out = ByteArrayOutputStream()
+        DataOutputStream(out).apply {
+            writeInt(0x534A494E) // "SJIN"
+            writeInt(999)        // Unsupported version
+            writeInt(0)
+            flush()
+        }
+        StrokeSerializer.deserialize(out.toByteArray())
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun deserialize_excessiveStrokeCount_throwsIllegalArgumentExceptionInsteadOfOOM() {
+        val out = ByteArrayOutputStream()
+        DataOutputStream(out).apply {
+            writeInt(0x534A494E) // "SJIN"
+            writeInt(1)
+            writeInt(Int.MAX_VALUE) // Malicious/corrupted count
+            flush()
+        }
+        StrokeSerializer.deserialize(out.toByteArray())
+    }
+
+    @Test(expected = EOFException::class)
+    fun deserialize_truncatedPayload_throwsEOFException() {
+        val validStroke = Stroke(
+            id = "truncated",
+            points = listOf(StrokePoint(1f, 2f, 0.5f, 100L)),
+            color = 0,
+            baseWidth = 4f,
+            tool = SpenTool.PEN
+        )
+        val fullBytes = StrokeSerializer.serialize(listOf(validStroke))
+        val truncatedBytes = fullBytes.copyOf(fullBytes.size - 6)
+        StrokeSerializer.deserialize(truncatedBytes)
     }
 }

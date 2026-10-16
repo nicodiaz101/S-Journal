@@ -37,6 +37,7 @@ import com.example.s_journal.ui.canvas.model.SpenTool
 
 @Composable
 fun SpenToolbarPill(
+    modifier: Modifier = Modifier,
     selectedTool: SpenTool = SpenTool.PEN,
     currentColor: Int = android.graphics.Color.WHITE,
     canUndo: Boolean = false,
@@ -45,14 +46,12 @@ fun SpenToolbarPill(
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {},
     onColorPickerClick: () -> Unit = {},
-    onToggleRuledLines: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onToggleRuledLines: () -> Unit = {}
 ) {
     val haptic = LocalHapticFeedback.current
 
     Surface(
-        modifier = modifier
-            .clip(ToolbarPillShape),
+        modifier = modifier,
         shape = ToolbarPillShape,
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
         tonalElevation = 6.dp

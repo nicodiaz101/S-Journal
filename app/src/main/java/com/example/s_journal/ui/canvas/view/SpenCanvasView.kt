@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.graphics.createBitmap
 import com.example.s_journal.ui.canvas.engine.StrokeBuffer
 import com.example.s_journal.ui.canvas.engine.StrokeProcessor
 import com.example.s_journal.ui.canvas.engine.StrokeRenderer
@@ -45,7 +46,7 @@ class SpenCanvasView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldw, oldh)
         if (w > 0 && h > 0) {
             val oldBitmap = backingBitmap
-            val newBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val newBitmap = createBitmap(w, h, Bitmap.Config.ARGB_8888)
             val newCanvas = Canvas(newBitmap)
             backingBitmap = newBitmap
             backingCanvas = newCanvas
@@ -108,16 +109,15 @@ class SpenCanvasView @JvmOverloads constructor(
             strokeRenderer.renderStrokes(canvas, strokeBuffer.strokes)
         }
 
-        // 2. Draw currently active stroke in progress
+        // 2. Draw currently active stroke in progress without allocating objects
         if (activeStrokePoints.isNotEmpty() && !isErasing) {
-            val activeStroke = Stroke(
-                id = "active_stroke",
+            strokeRenderer.renderPoints(
+                canvas = canvas,
                 points = activeStrokePoints,
                 color = currentColor,
                 baseWidth = currentStrokeWidth,
                 tool = currentTool
             )
-            strokeRenderer.renderStroke(canvas, activeStroke)
         }
     }
 

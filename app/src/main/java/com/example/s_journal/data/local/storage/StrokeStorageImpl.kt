@@ -11,12 +11,19 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class StrokeStorageImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context
+class StrokeStorageImpl private constructor(
+    private val filesDirProvider: () -> File
 ) : StrokeStorage {
 
+    @Inject
+    constructor(
+        @ApplicationContext context: Context
+    ) : this({ context.filesDir })
+
+    internal constructor(filesDir: File) : this({ filesDir })
+
     private fun getStrokesFile(date: LocalDate): File {
-        val strokesDir = File(context.filesDir, "strokes")
+        val strokesDir = File(filesDirProvider(), "strokes")
         return File(strokesDir, "$date.sjink")
     }
 

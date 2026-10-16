@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
@@ -40,10 +41,11 @@ data class CanvasUiState(
 class CanvasViewModel @Inject constructor(
     private val journalRepository: JournalRepository,
     private val strokeStorage: StrokeStorage,
-    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val clock: Clock = Clock.systemDefaultZone()
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CanvasUiState())
+    private val _uiState = MutableStateFlow(CanvasUiState(selectedDate = LocalDate.now(clock)))
     val uiState: StateFlow<CanvasUiState> = _uiState.asStateFlow()
 
     private var saveDebounceJob: Job? = null
@@ -52,7 +54,7 @@ class CanvasViewModel @Inject constructor(
     private var pendingSaveDate: LocalDate? = null
 
     init {
-        loadStrokesForDate(LocalDate.now())
+        loadStrokesForDate(LocalDate.now(clock))
     }
 
     fun setDate(date: LocalDate) {
@@ -156,10 +158,12 @@ class CanvasViewModel @Inject constructor(
     private fun loadStrokesForDate(date: LocalDate) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch(ioDispatcher) {
+            var loadError: String? = null
             val loadedStrokes = try {
                 strokeStorage.loadStrokes(date)
             } catch (e: Exception) {
                 android.util.Log.e("SJournal", "Failed to load strokes for $date", e)
+                loadError = "Failed to load strokes: ${e.localizedMessage}"
                 emptyList()
             }
 
@@ -168,9 +172,9 @@ class CanvasViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         strokes = loadedStrokes,
-                        canUndo = loadedStrokes.isNotEmpty(),
+                        canUndo = false,
                         canRedo = false,
-                        errorMessage = null
+                        errorMessage = loadError
                     )
                 }
             }
@@ -187,7 +191,7 @@ class CanvasViewModel @Inject constructor(
                 } else {
                     val relativePath = strokeStorage.saveStrokes(date, strokes)
                     val existingEntry = journalRepository.getEntryByDateSync(date)
-                    val now = Instant.now()
+                    val now = Instant.now(clock)
                     val entry = JournalEntry(
                         id = date.toString(),
                         date = date,

@@ -205,6 +205,20 @@ override fun onTouchEvent(event: MotionEvent): Boolean {
 
 ## 7. Criterios de Validación y Testing
 
+### 7.0 Gate Automático Obligatorio en Cada Modificación (`verifyAgentChanges`)
+
+> **REGLA BLOQUEANTE:** Antes de dar por finalizada cualquier modificación de código o realizar un commit, el agente **DEBE** ejecutar:
+> ```bash
+> ./gradlew verifyAgentChanges
+> ```
+> y confirmar `BUILD SUCCESSFUL` con 0 errores.
+
+Esta tarea unificada valida automáticamente:
+1. Compilación completa de todos los source sets (`compileDebugKotlin`, `compileDebugUnitTestKotlin`, `compileDebugAndroidTestKotlin`) y generación KSP de Hilt y Room.
+2. Ejecución de toda la suite de tests unitarios y guardrails de arquitectura (`testDebugUnitTest`, incluyendo `ProjectGuardrailsTest`).
+3. Análisis estático estricto (`lintDebug`) que bloquea alocaciones en `onDraw` (`DrawAllocation`), traducciones faltantes o desfasadas entre inglés y español (`MissingTranslation`, `ExtraTranslation`), textos hardcodeados (`HardcodedText`) y errores de parámetros `Modifier`.
+4. Ensamblado final del APK (`assembleDebug`).
+
 ### 7.1 Tests Obligatorios antes de marcar una fase como completa
 
 #### Fase 1 — Scaffolding

@@ -5,7 +5,7 @@ import com.example.s_journal.ui.canvas.model.Stroke
 class StrokeBuffer {
 
     companion object {
-        private const val MAX_UNDO_STACK_SIZE = 50
+        internal const val MAX_UNDO_STACK_SIZE = 50
     }
 
     private val _strokes = mutableListOf<Stroke>()
@@ -18,7 +18,7 @@ class StrokeBuffer {
     private var erasingInitialState: List<Stroke>? = null
     private var hasErasedInCurrentGesture: Boolean = false
 
-    val canUndo: Boolean get() = undoStack.isNotEmpty() || _strokes.isNotEmpty()
+    val canUndo: Boolean get() = undoStack.isNotEmpty()
     val canRedo: Boolean get() = redoStack.isNotEmpty()
 
     fun setStrokes(newStrokes: List<Stroke>) {
@@ -37,16 +37,12 @@ class StrokeBuffer {
     }
 
     fun undo(): Boolean {
-        if (_strokes.isEmpty() && undoStack.isEmpty()) return false
+        if (undoStack.isEmpty()) return false
 
         pushRedoSnapshot(_strokes.toList())
-        if (undoStack.isNotEmpty()) {
-            val previousState = undoStack.removeAt(undoStack.lastIndex)
-            _strokes.clear()
-            _strokes.addAll(previousState)
-        } else {
-            _strokes.clear()
-        }
+        val previousState = undoStack.removeAt(undoStack.lastIndex)
+        _strokes.clear()
+        _strokes.addAll(previousState)
         return true
     }
 

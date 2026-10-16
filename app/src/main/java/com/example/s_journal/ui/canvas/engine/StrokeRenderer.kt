@@ -36,28 +36,43 @@ class StrokeRenderer {
     }
 
     fun renderStroke(canvas: Canvas, stroke: Stroke) {
-        val points = stroke.points
+        renderPoints(
+            canvas = canvas,
+            points = stroke.points,
+            color = stroke.color,
+            baseWidth = stroke.baseWidth,
+            tool = stroke.tool
+        )
+    }
+
+    fun renderPoints(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        color: Int,
+        baseWidth: Float,
+        tool: SpenTool
+    ) {
         if (points.isEmpty()) return
 
         if (points.size == 1) {
             val point = points[0]
-            val radius = calculateStrokeWidth(stroke.baseWidth, point.pressure, stroke.tool) / 2f
-            dotPaint.color = stroke.color
-            if (stroke.tool == SpenTool.HIGHLIGHTER) {
+            val radius = calculateStrokeWidth(baseWidth, point.pressure, tool) / 2f
+            dotPaint.color = color
+            if (tool == SpenTool.HIGHLIGHTER) {
                 dotPaint.alpha = 110 // Translucent highlighter
             } else {
-                dotPaint.alpha = (stroke.color ushr 24)
+                dotPaint.alpha = (color ushr 24)
             }
             canvas.drawCircle(point.x, point.y, radius, dotPaint)
             return
         }
 
-        when (stroke.tool) {
+        when (tool) {
             SpenTool.HIGHLIGHTER -> {
-                renderHighlighterStroke(canvas, stroke)
+                renderHighlighterPoints(canvas, points, color, baseWidth)
             }
             SpenTool.PEN, SpenTool.PENCIL -> {
-                renderPressureSensitiveStroke(canvas, stroke)
+                renderPressureSensitivePoints(canvas, points, color, baseWidth, tool)
             }
             SpenTool.ERASER -> {
                 // Eraser does not render directly; it erases strokes from the buffer
@@ -65,11 +80,15 @@ class StrokeRenderer {
         }
     }
 
-    private fun renderHighlighterStroke(canvas: Canvas, stroke: Stroke) {
-        val points = stroke.points
-        highlighterPaint.color = stroke.color
+    private fun renderHighlighterPoints(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        color: Int,
+        baseWidth: Float
+    ) {
+        highlighterPaint.color = color
         highlighterPaint.alpha = 100
-        highlighterPaint.strokeWidth = stroke.baseWidth * 2.5f
+        highlighterPaint.strokeWidth = baseWidth * 2.5f
 
         path.reset()
         path.moveTo(points[0].x, points[0].y)
@@ -87,11 +106,16 @@ class StrokeRenderer {
         canvas.drawPath(path, highlighterPaint)
     }
 
-    private fun renderPressureSensitiveStroke(canvas: Canvas, stroke: Stroke) {
-        val points = stroke.points
-        strokePaint.color = stroke.color
+    private fun renderPressureSensitivePoints(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        color: Int,
+        baseWidth: Float,
+        tool: SpenTool
+    ) {
+        strokePaint.color = color
 
-        val isPencil = stroke.tool == SpenTool.PENCIL
+        val isPencil = tool == SpenTool.PENCIL
         if (isPencil) {
             strokePaint.alpha = 200 // Slightly textured/softer
         }
@@ -102,7 +126,7 @@ class StrokeRenderer {
             val p1 = points[i]
 
             val avgPressure = (p0.pressure + p1.pressure) / 2f
-            val width = calculateStrokeWidth(stroke.baseWidth, avgPressure, stroke.tool)
+            val width = calculateStrokeWidth(baseWidth, avgPressure, tool)
             strokePaint.strokeWidth = width
 
             canvas.drawLine(p0.x, p0.y, p1.x, p1.y, strokePaint)

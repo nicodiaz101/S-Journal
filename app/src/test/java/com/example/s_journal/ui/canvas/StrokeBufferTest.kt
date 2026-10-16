@@ -97,6 +97,39 @@ class StrokeBufferTest {
     }
 
     @Test
+    fun cancelEraseGesture_restoresErasedStrokesWithoutPushingUndoState() {
+        val s1 = createDummyStroke("1", 100f, 100f)
+        val s2 = createDummyStroke("2", 200f, 200f)
+        strokeBuffer.setStrokes(listOf(s1, s2))
+        assertFalse(strokeBuffer.canUndo)
+
+        strokeBuffer.beginEraseGesture()
+        strokeBuffer.eraseStrokesIntersecting(100f, 100f, radius = 15f)
+        assertEquals(1, strokeBuffer.strokes.size)
+
+        // Cancel gesture (e.g. ACTION_CANCEL)
+        strokeBuffer.cancelEraseGesture()
+        assertEquals(2, strokeBuffer.strokes.size)
+        assertFalse("Cancelled erase gesture should not leave an undo step", strokeBuffer.canUndo)
+    }
+
+    @Test
+    fun undoStack_isCappedAtMaxLimit_preventingUnboundedMemoryGrowth() {
+        val totalStrokes = StrokeBuffer.MAX_UNDO_STACK_SIZE + 15
+        for (i in 1..totalStrokes) {
+            strokeBuffer.addStroke(createDummyStroke("s-$i", i.toFloat(), i.toFloat()))
+        }
+
+        var undoCount = 0
+        while (strokeBuffer.undo()) {
+            undoCount++
+        }
+
+        assertEquals(StrokeBuffer.MAX_UNDO_STACK_SIZE, undoCount)
+        assertEquals(15, strokeBuffer.strokes.size)
+    }
+
+    @Test
     fun eraseStrokesIntersecting_detectsIntersectionAlongSegment() {
         // Line between (0, 0) and (100, 0) with no intermediate points
         val longSegmentStroke = Stroke(
@@ -115,6 +148,30 @@ class StrokeBufferTest {
         val erased = strokeBuffer.eraseStrokesIntersecting(50f, 0f, radius = 5f)
         assertTrue("Eraser should intersect midpoint of segment", erased)
         assertEquals(0, strokeBuffer.strokes.size)
+    }
+
+    @Test
+    fun strokeBoundingBox_precomputesCorrectMinMaxForPositiveNegativeAndEmptyPoints() {
+        val emptyStroke = Stroke(id = "empty", points = emptyList(), color = 0, baseWidth = 4f)
+        assertEquals(0f, emptyStroke.minX, 0.001f)
+        assertEquals(0f, emptyStroke.maxX, 0.001f)
+        assertEquals(0f, emptyStroke.minY, 0.001f)
+        assertEquals(0f, emptyStroke.maxY, 0.001f)
+
+        val multiPointStroke = Stroke(
+            id = "bounds",
+            points = listOf(
+                StrokePoint(x = -25f, y = 40f),
+                StrokePoint(x = 120f, y = -10f),
+                StrokePoint(x = 50f, y = 300f)
+            ),
+            color = 0,
+            baseWidth = 4f
+        )
+        assertEquals(-25f, multiPointStroke.minX, 0.001f)
+        assertEquals(120f, multiPointStroke.maxX, 0.001f)
+        assertEquals(-10f, multiPointStroke.minY, 0.001f)
+        assertEquals(300f, multiPointStroke.maxY, 0.001f)
     }
 
     @Test
