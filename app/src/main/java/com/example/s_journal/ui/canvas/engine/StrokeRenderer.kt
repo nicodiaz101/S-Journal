@@ -6,7 +6,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import com.example.s_journal.ui.canvas.model.Stroke
 import com.example.s_journal.ui.canvas.model.StrokePoint
-import com.example.s_journal.ui.components.SpenTool
+import com.example.s_journal.ui.canvas.model.SpenTool
 
 class StrokeRenderer {
 

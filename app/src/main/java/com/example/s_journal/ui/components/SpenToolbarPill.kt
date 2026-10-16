@@ -31,13 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.s_journal.R
 import com.example.s_journal.theme.ToolbarPillShape
-
-enum class SpenTool {
-    PEN,
-    PENCIL,
-    HIGHLIGHTER,
-    ERASER
-}
+import com.example.s_journal.ui.canvas.model.SpenTool
 
 @Composable
 fun SpenToolbarPill(

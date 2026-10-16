@@ -1,9 +1,9 @@
 package com.example.s_journal.ui.canvas
 
 import com.example.s_journal.ui.canvas.engine.StrokeBuffer
+import com.example.s_journal.ui.canvas.model.SpenTool
 import com.example.s_journal.ui.canvas.model.Stroke
 import com.example.s_journal.ui.canvas.model.StrokePoint
-import com.example.s_journal.ui.components.SpenTool
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -69,6 +69,52 @@ class StrokeBufferTest {
         assertTrue(erased)
         assertEquals(1, strokeBuffer.strokes.size)
         assertEquals("2", strokeBuffer.strokes[0].id)
+    }
+
+    @Test
+    fun eraseGesture_groupsMultipleErasuresIntoSingleUndoStep() {
+        val s1 = createDummyStroke("1", 100f, 100f)
+        val s2 = createDummyStroke("2", 150f, 100f)
+        val s3 = createDummyStroke("3", 300f, 300f)
+        strokeBuffer.addStroke(s1)
+        strokeBuffer.addStroke(s2)
+        strokeBuffer.addStroke(s3)
+        assertEquals(3, strokeBuffer.strokes.size)
+
+        // Begin a single erase sweep
+        strokeBuffer.beginEraseGesture()
+        strokeBuffer.eraseStrokesIntersecting(100f, 100f, radius = 10f)
+        strokeBuffer.eraseStrokesIntersecting(150f, 100f, radius = 10f)
+        strokeBuffer.endEraseGesture()
+
+        assertEquals(1, strokeBuffer.strokes.size)
+        assertEquals("3", strokeBuffer.strokes[0].id)
+
+        // Undoing should restore BOTH erased strokes in a single step
+        val undone = strokeBuffer.undo()
+        assertTrue(undone)
+        assertEquals(3, strokeBuffer.strokes.size)
+    }
+
+    @Test
+    fun eraseStrokesIntersecting_detectsIntersectionAlongSegment() {
+        // Line between (0, 0) and (100, 0) with no intermediate points
+        val longSegmentStroke = Stroke(
+            id = "segment",
+            points = listOf(
+                StrokePoint(x = 0f, y = 0f, pressure = 1.0f),
+                StrokePoint(x = 100f, y = 0f, pressure = 1.0f)
+            ),
+            color = 0xFF000000.toInt(),
+            baseWidth = 4.0f,
+            tool = SpenTool.PEN
+        )
+        strokeBuffer.addStroke(longSegmentStroke)
+
+        // Eraser passes through midpoint (50, 0)
+        val erased = strokeBuffer.eraseStrokesIntersecting(50f, 0f, radius = 5f)
+        assertTrue("Eraser should intersect midpoint of segment", erased)
+        assertEquals(0, strokeBuffer.strokes.size)
     }
 
     @Test

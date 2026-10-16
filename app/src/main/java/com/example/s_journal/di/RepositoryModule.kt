@@ -1,5 +1,7 @@
 package com.example.s_journal.di
 
+import com.example.s_journal.data.local.storage.StrokeStorage
+import com.example.s_journal.data.local.storage.StrokeStorageImpl
 import com.example.s_journal.data.repository.JournalRepositoryImpl
 import com.example.s_journal.domain.repository.JournalRepository
 import dagger.Binds
@@ -17,4 +19,10 @@ abstract class RepositoryModule {
     abstract fun bindJournalRepository(
         journalRepositoryImpl: JournalRepositoryImpl
     ): JournalRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindStrokeStorage(
+        strokeStorageImpl: StrokeStorageImpl
+    ): StrokeStorage
 }

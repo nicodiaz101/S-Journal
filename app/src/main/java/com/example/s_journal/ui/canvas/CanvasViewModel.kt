@@ -1,16 +1,16 @@
 package com.example.s_journal.ui.canvas
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.s_journal.data.local.entity.JournalEntry
+import com.example.s_journal.data.local.storage.StrokeStorage
 import com.example.s_journal.data.model.EntryType
+import com.example.s_journal.di.IoDispatcher
 import com.example.s_journal.domain.repository.JournalRepository
-import com.example.s_journal.ui.canvas.engine.StrokeSerializer
+import com.example.s_journal.ui.canvas.model.SpenTool
 import com.example.s_journal.ui.canvas.model.Stroke
-import com.example.s_journal.ui.components.SpenTool
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
@@ -33,14 +32,16 @@ data class CanvasUiState(
     val canUndo: Boolean = false,
     val canRedo: Boolean = false,
     val showRuledLines: Boolean = true,
-    val isSaving: Boolean = false
+    val isSaving: Boolean = false,
+    val errorMessage: String? = null
 )
 
 @HiltViewModel
 class CanvasViewModel @Inject constructor(
-    application: Application,
-    private val journalRepository: JournalRepository
-) : AndroidViewModel(application) {
+    private val journalRepository: JournalRepository,
+    private val strokeStorage: StrokeStorage,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CanvasUiState())
     val uiState: StateFlow<CanvasUiState> = _uiState.asStateFlow()
@@ -97,7 +98,7 @@ class CanvasViewModel @Inject constructor(
             saveDebounceJob?.cancel()
             pendingSaveStrokes = null
             pendingSaveDate = null
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch(ioDispatcher) {
                 saveStrokesToDiskAndDatabase(strokes, date)
             }
         }
@@ -110,8 +111,8 @@ class CanvasViewModel @Inject constructor(
             saveDebounceJob?.cancel()
             pendingSaveStrokes = null
             pendingSaveDate = null
-            // Save synchronously or in background without delay
-            viewModelScope.launch(Dispatchers.IO) {
+            // Save immediately in background without debounce delay
+            viewModelScope.launch(ioDispatcher) {
                 saveStrokesToDiskAndDatabase(strokes, date)
             }
         }
@@ -140,66 +141,53 @@ class CanvasViewModel @Inject constructor(
         pendingSaveDate = null
         _uiState.update { it.copy(strokes = emptyList(), canUndo = false, canRedo = false) }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             try {
-                val file = getStrokesFile(date)
-                if (file.exists()) {
-                    file.delete()
-                }
+                strokeStorage.deleteStrokes(date)
                 journalRepository.deleteEntryById(date.toString())
+                _uiState.update { it.copy(errorMessage = null) }
             } catch (e: Exception) {
                 android.util.Log.e("SJournal", "Failed to clear canvas for $date", e)
+                _uiState.update { it.copy(errorMessage = "Failed to clear canvas: ${e.localizedMessage}") }
             }
         }
     }
 
     private fun loadStrokesForDate(date: LocalDate) {
         loadJob?.cancel()
-        loadJob = viewModelScope.launch(Dispatchers.IO) {
-            val file = getStrokesFile(date)
-            val loadedStrokes = if (file.exists()) {
-                try {
-                    StrokeSerializer.loadFromFile(file)
-                } catch (e: Exception) {
-                    android.util.Log.e("SJournal", "Corrupt or unreadable .sjink file for $date. Preserving file as .corrupt", e)
-                    try {
-                        val corruptFile = File(file.parentFile, "${file.name}.corrupt")
-                        file.renameTo(corruptFile)
-                    } catch (ignored: Exception) {}
-                    emptyList()
-                }
-            } else {
+        loadJob = viewModelScope.launch(ioDispatcher) {
+            val loadedStrokes = try {
+                strokeStorage.loadStrokes(date)
+            } catch (e: Exception) {
+                android.util.Log.e("SJournal", "Failed to load strokes for $date", e)
                 emptyList()
             }
 
-            withContext(Dispatchers.Main) {
-                // Ensure date has not changed while loading
-                if (_uiState.value.selectedDate == date) {
-                    _uiState.update {
-                        it.copy(
-                            strokes = loadedStrokes,
-                            canUndo = loadedStrokes.isNotEmpty(),
-                            canRedo = false
-                        )
-                    }
+            // Ensure date has not changed while loading before updating state
+            if (_uiState.value.selectedDate == date) {
+                _uiState.update {
+                    it.copy(
+                        strokes = loadedStrokes,
+                        canUndo = loadedStrokes.isNotEmpty(),
+                        canRedo = false,
+                        errorMessage = null
+                    )
                 }
             }
         }
     }
 
     private suspend fun saveStrokesToDiskAndDatabase(strokes: List<Stroke>, date: LocalDate) {
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
+            _uiState.update { it.copy(isSaving = true) }
             try {
-                val file = getStrokesFile(date)
                 if (strokes.isEmpty()) {
-                    if (file.exists()) file.delete()
+                    strokeStorage.deleteStrokes(date)
                     journalRepository.deleteEntryById(date.toString())
                 } else {
-                    StrokeSerializer.saveToFile(file, strokes)
-
+                    val relativePath = strokeStorage.saveStrokes(date, strokes)
                     val existingEntry = journalRepository.getEntryByDateSync(date)
                     val now = Instant.now()
-                    val relativePath = "strokes/$date.sjink"
                     val entry = JournalEntry(
                         id = date.toString(),
                         date = date,
@@ -211,14 +199,11 @@ class CanvasViewModel @Inject constructor(
                     )
                     journalRepository.saveEntry(entry)
                 }
+                _uiState.update { it.copy(isSaving = false, errorMessage = null) }
             } catch (e: Exception) {
                 android.util.Log.e("SJournal", "Failed to save strokes for date $date", e)
+                _uiState.update { it.copy(isSaving = false, errorMessage = "Failed to save entry: ${e.localizedMessage}") }
             }
         }
-    }
-
-    private fun getStrokesFile(date: LocalDate): File {
-        val strokesDir = File(getApplication<Application>().filesDir, "strokes")
-        return File(strokesDir, "$date.sjink")
     }
 }

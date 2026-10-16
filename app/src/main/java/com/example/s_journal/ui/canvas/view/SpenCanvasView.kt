@@ -10,9 +10,9 @@ import android.view.View
 import com.example.s_journal.ui.canvas.engine.StrokeBuffer
 import com.example.s_journal.ui.canvas.engine.StrokeProcessor
 import com.example.s_journal.ui.canvas.engine.StrokeRenderer
+import com.example.s_journal.ui.canvas.model.SpenTool
 import com.example.s_journal.ui.canvas.model.Stroke
 import com.example.s_journal.ui.canvas.model.StrokePoint
-import com.example.s_journal.ui.components.SpenTool
 import java.util.UUID
 
 class SpenCanvasView @JvmOverloads constructor(
@@ -142,6 +142,7 @@ class SpenCanvasView @JvmOverloads constructor(
 
                 if (effectiveTool == SpenTool.ERASER) {
                     isErasing = true
+                    strokeBuffer.beginEraseGesture()
                     val erased = strokeBuffer.eraseStrokesIntersecting(x, y, currentStrokeWidth * 3f)
                     if (erased) {
                         invalidate()
@@ -174,7 +175,11 @@ class SpenCanvasView @JvmOverloads constructor(
 
             MotionEvent.ACTION_UP -> {
                 parent?.requestDisallowInterceptTouchEvent(false)
-                if (!isErasing && effectiveTool != SpenTool.ERASER && activeStrokePoints.isNotEmpty()) {
+                if (isErasing) {
+                    strokeBuffer.endEraseGesture()
+                    isErasing = false
+                    onStrokesChangedListener?.invoke()
+                } else if (effectiveTool != SpenTool.ERASER && activeStrokePoints.isNotEmpty()) {
                     val newStroke = Stroke(
                         id = UUID.randomUUID().toString(),
                         points = activeStrokePoints.toList(),
@@ -189,14 +194,17 @@ class SpenCanvasView @JvmOverloads constructor(
                 } else {
                     activeStrokePoints.clear()
                 }
-                isErasing = false
                 return true
             }
 
             MotionEvent.ACTION_POINTER_UP -> {
                 // Only commit stroke if the pointer that lifted was the stylus
                 if (actionIndex == activeStylusIndex) {
-                    if (!isErasing && effectiveTool != SpenTool.ERASER && activeStrokePoints.isNotEmpty()) {
+                    if (isErasing) {
+                        strokeBuffer.endEraseGesture()
+                        isErasing = false
+                        onStrokesChangedListener?.invoke()
+                    } else if (effectiveTool != SpenTool.ERASER && activeStrokePoints.isNotEmpty()) {
                         val newStroke = Stroke(
                             id = UUID.randomUUID().toString(),
                             points = activeStrokePoints.toList(),
@@ -211,15 +219,17 @@ class SpenCanvasView @JvmOverloads constructor(
                     } else {
                         activeStrokePoints.clear()
                     }
-                    isErasing = false
                 }
                 return true
             }
 
             MotionEvent.ACTION_CANCEL -> {
                 parent?.requestDisallowInterceptTouchEvent(false)
+                if (isErasing) {
+                    strokeBuffer.cancelEraseGesture()
+                    isErasing = false
+                }
                 activeStrokePoints.clear()
-                isErasing = false
                 invalidate()
                 return true
             }

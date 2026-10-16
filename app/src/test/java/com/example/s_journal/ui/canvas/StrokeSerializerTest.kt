@@ -3,7 +3,7 @@ package com.example.s_journal.ui.canvas
 import com.example.s_journal.ui.canvas.engine.StrokeSerializer
 import com.example.s_journal.ui.canvas.model.Stroke
 import com.example.s_journal.ui.canvas.model.StrokePoint
-import com.example.s_journal.ui.components.SpenTool
+import com.example.s_journal.ui.canvas.model.SpenTool
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test

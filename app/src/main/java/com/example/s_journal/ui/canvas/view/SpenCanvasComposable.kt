@@ -7,8 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.s_journal.ui.canvas.model.SpenTool
 import com.example.s_journal.ui.canvas.model.Stroke
-import com.example.s_journal.ui.components.SpenTool
 
 @Composable
 fun SpenCanvasComposable(
@@ -41,7 +41,7 @@ fun SpenCanvasComposable(
     }
 
     LaunchedEffect(strokes) {
-        if (canvasView.strokeBuffer.strokes != strokes) {
+        if (canvasView.strokeBuffer.strokes !== strokes && canvasView.strokeBuffer.strokes != strokes) {
             canvasView.setStrokes(strokes)
         }
     }
@@ -58,9 +58,6 @@ fun SpenCanvasComposable(
             view.currentTool = currentTool
             view.currentColor = currentColor
             view.currentStrokeWidth = currentStrokeWidth
-            if (view.strokeBuffer.strokes != strokes) {
-                view.setStrokes(strokes)
-            }
         },
         modifier = modifier.fillMaxSize()
     )

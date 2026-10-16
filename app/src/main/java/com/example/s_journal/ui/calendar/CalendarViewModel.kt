@@ -36,7 +36,7 @@ class CalendarViewModel @Inject constructor(
     private val _datesWithEntries = journalRepository.getAllDatesWithEntries()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Eagerly,
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 
@@ -44,7 +44,7 @@ class CalendarViewModel @Inject constructor(
         journalRepository.getEntryByDate(date)
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly,
+        started = SharingStarted.WhileSubscribed(5_000),
         initialValue = null
     )
 
@@ -63,7 +63,7 @@ class CalendarViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly,
+        started = SharingStarted.WhileSubscribed(5_000),
         initialValue = CalendarUiState()
     )
 
